@@ -339,10 +339,10 @@
                 fields: [
                     { id: "anak_ke", label: "Anak ke berapa dari berapa bersaudara?", type: "text", canHide: true, placeholder: "Contoh: Anak ke-2 dari 3 bersaudara" },
                     { id: "kondisi_orang_tua", label: "Kondisi orang tua saat ini", type: "text", canHide: true, placeholder: "Contoh: Ayah & Ibu alhamdulillah sehat walafiat, tinggal bersama di Solo" },
-                    { id: "tinggi_badan", label: "Tinggal dengan siapa Anda tinggal saat ini?", type: "text", canHide: true, placeholder: "Contoh: Kost di Sleman dekat kantor" },
+                    { id: "tinggal_dengan_siapa", label: "Tinggal dengan siapa Anda tinggal saat ini?", type: "text", canHide: true, placeholder: "Contoh: Kost di Sleman dekat kantor" },
                     { id: "hubungan_ayah", label: "Seperti apa hubungan Anda dengan ayah?", type: "textarea", canHide: true, placeholder: "Contoh: Sangat dekat, sering bertukar pikiran dan menghormati keputusan beliau" },
                     { id: "hubungan_ibu", label: "Seperti apa hubungan Anda dengan ibu?", type: "textarea", canHide: true, placeholder: "Contoh: Sangat hangat, sering bercerita tentang aktivitas sehari-hari" },
-                    { id: "hubungan_saudara", label: "Like what was your relationship with siblings?", type: "textarea", canHide: true, placeholder: "Contoh: Akrab, saling tolong-menolong bila salah satu sedang mengalami kesulitan" },
+                    { id: "hubungan_saudara", label: "Bagaimana hubungan dengan saudara kandung?", type: "textarea", canHide: true, placeholder: "Contoh: Akrab, saling tolong-menolong bila salah satu sedang mengalami kesulitan" },
                     { id: "tanggungan_keluarga", label: "Apakah ada tanggungan keluarga yang perlu diketahui calon pasangan? (Sensitif)", type: "textarea", canHide: true, placeholder: "Contoh: Tidak ada / Ya, saya membantu biaya kuliah adik bungsu saya" },
                     { id: "rencana_tinggal", label: "Apakah setelah menikah ada rencana tinggal bersama orang tua atau keluarga besar?", type: "textarea", canHide: true, placeholder: "Contoh: Berencana mengontrak sendiri dari awal demi kenyamanan dan kemandirian" }
                 ]
@@ -407,7 +407,7 @@
                     { id: "gambaran_kepribadian", label: "Bagaimana menggambarkan kepribadian diri dalam 3–5 kata?", type: "text", canHide: true, placeholder: "Contoh: Sabar, pendiam, rapi, bertanggung jawab, pemikir" },
                     { id: "kelebihan_utama", label: "Apa kelebihan utama yang Anda miliki?", type: "textarea", canHide: true, placeholder: "Contoh: Mampu mengontrol emosi dengan baik, teliti dalam merencanakan masa depan, mandiri" },
                     { id: "hal_diperbaiki", label: "Apa kekurangan terbesar yang sedang diperbaiki?", type: "textarea", canHide: true, placeholder: "Contoh: Suka menunda pekerjaan kecil (sedang diatasi dengan list to-do harian), agak pemalu" },
-                    { id: "reaksi_marah", label: "Saat marah, biasanya bagaimana cara Anda bereaksi?", type: "textarea", canHide: true, placeholder: "Contoh: Lebih banyak diam terlebih dahulu untuk menenangkan pikiran, avoiding verbal insults" },
+                    { id: "reaksi_marah", label: "Saat marah, biasanya bagaimana cara Anda bereaksi?", type: "textarea", canHide: true, placeholder: "Contoh: Lebih banyak diam terlebih dahulu untuk menenangkan pikiran, menghindari berkata kasar" },
                     { id: "reaksi_kecewa", label: "Saat kecewa, lebih suka bicara langsung atau diam dulu?", type: "textarea", canHide: true, placeholder: "Contoh: Biasanya diam dulu 1-2 jam, setelah kepala dingin baru diajak bicara baik-baik" },
                     { id: "mudah_minta_maaf", label: "Apakah termasuk orang yang mudah meminta maaf?", type: "select", options: ["Sangat mudah & mengutamakan perdamaian", "Butuh waktu berpikir untuk memvalidasi kesalahan", "Suka berdiskusi dahulu sebelum berdamai"] },
                     { id: "mudah_memaafkan", label: "Apakah termasuk orang yang mudah memaafkan?", type: "select", options: ["Sangat pemaaf & tidak menyimpan dendam", "Mudah memaafkan namun butuh waktu melupakan", "Cukup selektif melihat iktikad baik"] },
@@ -627,8 +627,8 @@
             const [savedProfiles, setSavedProfiles] = useState([]);
             const [activeProfileId, setActiveProfileId] = useState(null);
 
-            // Screen step: 'home' | 'gender' | 'mode' | 'form' | 'review_before_submit' | 'template_select' | 'preview'
-            const [step, setStep] = useState('home');
+            // Screen step: 'login' | 'home' | 'gender' | 'mode' | 'form' | 'review_before_submit' | 'template_select' | 'preview'
+            const [step, setStep] = useState('login');
             const [gender, setGender] = useState(null);
             const [mode, setMode] = useState(null); // 'basic' | 'advanced'
             const [formStep, setFormStep] = useState(0);
@@ -643,9 +643,13 @@
             const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
             const [confirmModal, setConfirmModal] = useState({ show: false, message: '', onConfirm: null });
             const [showExampleFieldId, setShowExampleFieldId] = useState(null);
+            const [showDraftModal, setShowDraftModal] = useState(false);
 
             // Mobile Navigation Toggle
             const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+            // Prevent React re-entry triggers during history manipulation
+            const historyActionInProgress = useRef(false);
 
             // Toast Alert Helper
             const showToast = (message, type = 'success') => {
@@ -660,7 +664,26 @@
                 setConfirmModal({ show: true, message, onConfirm });
             };
 
-            // Load saved sessions, active drafts, and credentials on start
+            // Pure internal navigation that synchronizes React state and Browser History API
+            const navigateTo = (targetStep, targetFormStep = null, pushToHistory = true) => {
+                setStep(targetStep);
+                if (targetFormStep !== null) {
+                    setFormStep(targetFormStep);
+                }
+
+                if (pushToHistory) {
+                    const stateObj = {
+                        step: targetStep,
+                        formStep: targetFormStep,
+                        gender,
+                        mode,
+                        selectedTemplate
+                    };
+                    window.history.pushState(stateObj, "", "");
+                }
+            };
+
+            // Recover credentials and active drafts from localStorage/sessionStorage
             useEffect(() => {
                 const loggedLocalStorage = localStorage.getItem('cv_taaruf_logged_in') === 'true';
                 const loggedSessionStorage = sessionStorage.getItem('cv_taaruf_logged_in') === 'true';
@@ -672,22 +695,80 @@
                     try {
                         setSavedProfiles(JSON.parse(rawProfiles));
                     } catch (e) {
-                        console.error("Gagal memuat basis data profil:", e);
+                        console.error("Gagal memuat basis data draf lokal:", e);
                     }
                 }
 
                 if ((remember && loggedLocalStorage) || loggedSessionStorage) {
                     setIsLoggedIn(true);
+                    setStep('home');
+                    window.history.replaceState({ step: 'home', formStep: null }, "", "");
                     
-                    // Recover active draft profile metadata if loaded
+                    // Recover active draft profile metadata if available
                     const lastActiveId = localStorage.getItem('cv_taaruf_active_profile_id');
                     if (lastActiveId) {
                         setActiveProfileId(lastActiveId);
+                        // Trigger Draft Recovery offer if answers are detected
+                        const rawLastActiveDraft = localStorage.getItem('cv_taaruf_active_draft_answers');
+                        if (rawLastActiveDraft) {
+                            setShowDraftModal(true);
+                        }
                     }
                 } else {
                     setIsLoggedIn(false);
+                    setStep('login');
+                    window.history.replaceState({ step: 'login', formStep: null }, "", "");
                 }
             }, []);
+
+            // Popstate event handler for browser back/forward buttons
+            useEffect(() => {
+                const handlePopState = (event) => {
+                    if (historyActionInProgress.current) return;
+                    
+                    if (event.state) {
+                        const { step: targetStep, formStep: targetFormStep, gender: targetGender, mode: targetMode, selectedTemplate: targetTemplate } = event.state;
+                        
+                        historyActionInProgress.current = true;
+                        
+                        if (targetGender !== undefined) setGender(targetGender);
+                        if (targetMode !== undefined) setMode(targetMode);
+                        if (targetTemplate !== undefined) setSelectedTemplate(targetTemplate);
+                        
+                        setStep(targetStep);
+                        if (targetFormStep !== null && targetFormStep !== undefined) {
+                            setFormStep(targetFormStep);
+                        }
+                        
+                        historyActionInProgress.current = false;
+                    } else {
+                        // Base Fallback State
+                        historyActionInProgress.current = true;
+                        if (!isLoggedIn) {
+                            setStep('login');
+                        } else {
+                            setStep('home');
+                        }
+                        historyActionInProgress.current = false;
+                    }
+                };
+
+                window.addEventListener('popstate', handlePopState);
+                return () => window.removeEventListener('popstate', handlePopState);
+            }, [isLoggedIn, gender, mode, selectedTemplate]);
+
+            // Prevent accidental tab closes or backward escapes during form filling
+            useEffect(() => {
+                const handleBeforeUnload = (e) => {
+                    if (isLoggedIn && step === 'form') {
+                        e.preventDefault();
+                        e.returnValue = 'Data pengisian Anda sudah tersimpan otomatis. Yakin ingin menutup tab/aplikasi ini?';
+                        return e.returnValue;
+                    }
+                };
+                window.addEventListener('beforeunload', handleBeforeUnload);
+                return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+            }, [isLoggedIn, step]);
 
             const handleLogin = (e) => {
                 e.preventDefault();
@@ -702,6 +783,7 @@
                     setIsLoggedIn(true);
                     setLoginError('');
                     showToast('Berhasil masuk! Selamat datang di CV Ta’aruf Generator.');
+                    navigateTo('home');
                 } else {
                     setLoginError('Kata sandi salah. Silakan periksa kembali email pembelian Anda.');
                 }
@@ -712,17 +794,15 @@
                 localStorage.removeItem('cv_taaruf_remember_me');
                 sessionStorage.removeItem('cv_taaruf_logged_in');
                 setIsLoggedIn(false);
-                setStep('home');
+                navigateTo('login');
                 showToast('Anda telah keluar.');
             };
 
-            // Update & persist list of profiles to localStorage
             const persistProfilesList = (newList) => {
                 setSavedProfiles(newList);
                 localStorage.setItem('cv_taaruf_profiles_db', JSON.stringify(newList));
             };
 
-            // Saves current live editing data to a persistent profile
             const handleSaveCurrentProfile = (silent = false) => {
                 if (!isLoggedIn) return;
                 setSaveIndicator('Menyimpan...');
@@ -759,6 +839,7 @@
                 persistProfilesList(updatedList);
                 setActiveProfileId(profileId);
                 localStorage.setItem('cv_taaruf_active_profile_id', profileId);
+                localStorage.setItem('cv_taaruf_active_draft_answers', JSON.stringify(answers));
 
                 setTimeout(() => {
                     setSaveIndicator('Tersimpan di daftar');
@@ -769,9 +850,9 @@
                 }, 400);
             };
 
-            // Auto-trigger silent save during form entries
             const triggerAutoSave = (currentAnswers, currentHidden, currentTemplate) => {
-                if (!activeProfileId) return; // Only auto-saves if already initialized as a loaded profile
+                localStorage.setItem('cv_taaruf_active_draft_answers', JSON.stringify(currentAnswers));
+                if (!activeProfileId) return; 
                 const profileId = activeProfileId;
                 const updatedList = savedProfiles.map((p) => {
                     if (p.id === profileId) {
@@ -797,8 +878,34 @@
                 setAnswers(profile.answers || {});
                 setHiddenFields(profile.hiddenFields || {});
                 setSelectedTemplate(profile.selectedTemplate || 'elegant');
-                setStep('form');
+                navigateTo('form', profile.formStep || 0);
                 showToast(`Memuat data: ${profile.name}`);
+            };
+
+            const recoverActiveDraft = () => {
+                const lastDraft = localStorage.getItem('cv_taaruf_active_draft_answers');
+                if (lastDraft) {
+                    try {
+                        setAnswers(JSON.parse(lastDraft));
+                        showToast("Draf terakhir berhasil dipulihkan!");
+                    } catch (e) {
+                        console.error("Gagal mengurai draf terakhir:", e);
+                    }
+                }
+                setShowDraftModal(false);
+            };
+
+            const handleStartNewCV = () => {
+                const newId = 'profile_' + Date.now();
+                setActiveProfileId(newId);
+                localStorage.setItem('cv_taaruf_active_profile_id', newId);
+                localStorage.removeItem('cv_taaruf_active_draft_answers');
+                setAnswers({});
+                setHiddenFields({});
+                setGender(null);
+                setMode(null);
+                setFormStep(0);
+                navigateTo('gender');
             };
 
             const handleDeleteProfile = (pId, pName) => {
@@ -810,6 +917,7 @@
                         if (activeProfileId === pId) {
                             setActiveProfileId(null);
                             localStorage.removeItem('cv_taaruf_active_profile_id');
+                            localStorage.removeItem('cv_taaruf_active_draft_answers');
                             setAnswers({});
                             setHiddenFields({});
                             setGender(null);
@@ -820,19 +928,6 @@
                 );
             };
 
-            const handleStartNewCV = () => {
-                // Clear active buffers, create a brand new ID
-                const newId = 'profile_' + Date.now();
-                setActiveProfileId(newId);
-                localStorage.setItem('cv_taaruf_active_profile_id', newId);
-                setAnswers({});
-                setHiddenFields({});
-                setGender(null);
-                setMode(null);
-                setFormStep(0);
-                setStep('gender');
-            };
-
             const resetAllActiveForm = () => {
                 triggerConfirm(
                     "Yakin ingin mengosongkan semua data pengisian formulir saat ini? Perubahan eksternal belum disimpan ke daftar profil.",
@@ -840,6 +935,7 @@
                         setAnswers({});
                         setHiddenFields({});
                         setFormStep(0);
+                        localStorage.removeItem('cv_taaruf_active_draft_answers');
                         showToast('Isi formulir aktif berhasil dibersihkan.');
                     }
                 );
@@ -856,129 +952,6 @@
                 setHiddenFields(updatedHidden);
                 triggerAutoSave(answers, updatedHidden, selectedTemplate);
                 showToast(updatedHidden[fieldId] ? "Disembunyikan dari lembar PDF" : "Akan dicetak di lembar PDF");
-            };
-
-            // Auto-fills with realistic sunnah-based data for quick test evaluation
-            const handleAutoFill = () => {
-                const testGender = gender || 'ikhwan';
-                const testMode = mode || 'advanced';
-
-                setGender(testGender);
-                setMode(testMode);
-
-                const mockAnswers = {
-                    nama_lengkap: testGender === 'akhwat' ? "Fatimah Az-Zahra, S.Psi." : "Muhammad Akhyar, S.T.",
-                    nama_panggilan: testGender === 'akhwat' ? "Fatimah" : "Akhyar",
-                    usia: testGender === 'akhwat' ? "26" : "28",
-                    domisili_saat_ini: testGender === 'akhwat' ? "Sleman, D.I. Yogyakarta" : "Bandung, Jawa Barat",
-                    asal_daerah: testGender === 'akhwat' ? "Solo, Jawa Tengah" : "Sleman, Yogyakarta / Suku Jawa",
-                    pendidikan_terakhir: testGender === 'akhwat' ? "S1 Psikologi Universitas Gadjah Mada" : "S1 Teknik Informatika ITB",
-                    pekerjaan_saat_ini: testGender === 'akhwat' ? "HR Officer di Perusahaan Startup FinTech" : "Senior Software Engineer di Tech Company",
-                    status_pernikahan: "Single",
-                    tinggi_badan: testGender === 'akhwat' ? "158" : "173",
-                    berat_badan: testGender === 'akhwat' ? "50" : "66",
-                    cerita_diri: EXAMPLES_DB.cerita_diri,
-                    kelebihan_utama: EXAMPLES_DB.kelebihan_utama,
-                    hal_diperbaiki: EXAMPLES_DB.hal_diperbaiki,
-                    hobi: EXAMPLES_DB.hobi,
-                    gaya_komunikasi: "Tenang, sopan, berbicara secukupnya namun hangat, dan menghindari debat kusir.",
-                    hal_membuat_nyaman: "Komunikasi yang jujur, logis, santun, dan saling mendengarkan tanpa memotong pembicaraan.",
-                    hal_membuat_kurang_nyaman: "Kata-kata yang kasar, tidak jujur/berbohong, dan bercanda berlebihan yang melampaui batas kesopanan.",
-                    shalat_wajib: testGender === 'akhwat' ? "Alhamdulillah selalu tepat waktu di awal waktu di rumah" : "Alhamdulillah selalu diupayakan tepat waktu berjamaah di masjid terdekat",
-                    rutin_baca_quran: "Alhamdulillah rutin dibiasakan membaca minimal setengah juz per hari setelah tilawah subuh.",
-                    hafalan_quran: "Juz 30 (Insya Allah sedang berproses menambah hafalan surah-surah pilihan seperti Al-Mulk)",
-                    ustadz_sering_didengar: "Ustadz Adi Hidayat, Ustadz Syafiq Riza Basalamah, Ustadz Nuzul Dzikri",
-                    prinsip_agama: EXAMPLES_DB.prinsip_agama,
-                    seberapa_penting_belajar: "Sangat penting, karena ilmu agama adalah fondasi utama untuk membangun ketahanan moral dan spiritual.",
-                    alasan_menikah: EXAMPLES_DB.alasan_menikah,
-                    target_menikah: "Insya Allah siap dalam kurun waktu 6 hingga 12 bulan ke depan setelah proses ta'aruf dinyatakan cocok.",
-                    rumah_tangga_ideal: EXAMPLES_DB.rumah_tangga_ideal,
-                    peran_suami: EXAMPLES_DB.peran_suami,
-                    peran_istri: EXAMPLES_DB.peran_istri,
-                    kriteria_pasangan: EXAMPLES_DB.kriteria_pasangan,
-                    hal_dihargai: "Kejujuran yang tulus, keterbukaan sikap, kesediaan untuk terus belajar bersama, serta kelembutan tutur kata.",
-                    hal_tidak_ditoleransi: "Meninggalkan shalat wajib dengan sengaja, merokok/vape, berkata kasar atau melakukan kekerasan fisik/verbal.",
-                    cara_komunikasi_nyaman: "Melalui perantara pihak ketiga yang terpercaya (murabbi/wali), menjaga adab bertukar pesan secara profesional.",
-                    bersedia_melibatkan_wali: "Sangat Bersedia",
-                    bersedia_lanjut: "Sangat Bersedia",
-
-                    tempat_tanggal_lahir: testGender === 'akhwat' ? "Solo, 12 Desember 2000" : "Jakarta, 12 Desember 1997",
-                    pernah_menikah_sebelumnya: "Cerai Hidup",
-                    kapan_bercerai: "Maret 2024",
-                    memiliki_anak: "Ada 1 anak perempuan usia 4 tahun, saat ini diasuh secara kooperatif dan tinggal bersama saya.",
-                    no_hp: EXAMPLES_DB.no_hp,
-                    email: EXAMPLES_DB.email,
-                    sosial_media: EXAMPLES_DB.sosial_media,
-                    anak_ke: "Anak ke-2 dari 3 bersaudara",
-                    kondisi_orang_tua: "Ayah dan Ibu Alhamdulillah sehat walafiat, saat ini berdomisili di kampung halaman.",
-                    tinggal_dengan_siapa: "Tinggal secara mandiri di rumah kontrakan dekat dengan tempat kerja.",
-                    hubungan_ayah: EXAMPLES_DB.hubungan_ayah,
-                    hubungan_ibu: EXAMPLES_DB.hubungan_ibu,
-                    hubungan_saudara: EXAMPLES_DB.hubungan_saudara,
-                    tanggungan_keluarga: EXAMPLES_DB.tanggungan_keluarga,
-                    rencana_tinggal: EXAMPLES_DB.rencana_tinggal,
-                    jurusan_keahlian: testGender === 'akhwat' ? "Psikologi Perkembangan Anak" : "Informatika / Cloud Engineering",
-                    status_pekerjaan: "Karyawan Tetap",
-                    penghasilan_bulanan: "Rp 8.000.000 - Rp 12.000.000",
-                    penghasilan_stabil: "Stabil & Rutin",
-                    rencana_karir: EXAMPLES_DB.rencana_karir,
-                    wanita_pekerjaan_setelah_nikah: EXAMPLES_DB.wanita_pekerjaan_setelah_nikah,
-                    pria_kesiapan_nafkah: EXAMPLES_DB.pria_kesiapan_nafkah,
-                    pasangan_bekerja_setelah_nikah: EXAMPLES_DB.pasangan_bekerja_setelah_nikah,
-                    hutang_pribadi: "Tidak ada hutang",
-                    estimasi_hutang: "Nihil",
-                    pinjol: "Tidak pernah sama sekali",
-                    judi_investasi_spekulatif: "Tidak pernah sama sekali",
-                    tabungan_pribadi: "Ada",
-                    dana_darurat: "Ya, sudah siap untuk kebutuhan mendesak",
-                    aset_dimiliki: ["Kendaraan", "Logam Mulia"],
-                    gaya_mengatur_uang: EXAMPLES_DB.gaya_mengatur_uang,
-                    keuangan_setelah_nikah: "Kombinasi, suami mengelola pos nafkah utama keluarga, istri memegang kendali harian rumah tangga.",
-                    kewajiban_bantu_keluarga: "Hanya mengirimkan hadiah rutin bulanan untuk orang tua sebagai bentuk bakti.",
-                    prinsip_uang_keluarga: EXAMPLES_DB.prinsip_uang_keluarga,
-                    ikut_kajian_rutin: "Rutin mengikuti kajian pekanan di masjid perumahan dan menyimak siaran langsung ustadz sunnah.",
-                    pandangan_kepemimpinan_suami: EXAMPLES_DB.pandangan_kepemimpinan_suami,
-                    keputusan_beda_pendapat: EXAMPLES_DB.keputusan_beda_pendapat,
-                    target_ibadah_nikah: EXAMPLES_DB.target_ibadah_nikah,
-                    penting_pendidikan_agama_anak: EXAMPLES_DB.penting_pendidikan_agama_anak,
-                    pandangan_poligami: EXAMPLES_DB.pandangan_poligami,
-                    gambaran_kepribadian: "Tenang, Terorganisir, Bertanggung Jawab, Penyabar.",
-                    reaksi_marah: EXAMPLES_DB.reaksi_marah,
-                    reaksi_kecewa: EXAMPLES_DB.reaksi_kecewa,
-                    mudah_minta_maaf: "Sangat mudah & mengutamakan perdamaian",
-                    mudah_memaafkan: "Sangat pemaaf & tidak menyimpan dendam",
-                    kebiasaan_buruk: EXAMPLES_DB.kebiasaan_buruk,
-                    ketidaknyamanan_kecil: "Jika terjadi ingkar janji tanpa adanya kabar atau alasan yang logis.",
-                    cara_diperlakukan_stres: EXAMPLES_DB.cara_diperlakukan_stres,
-                    hubungan_serius_sebelumnya: "Tidak pernah berpacaran, hanya pernah menjalani ta'aruf yang belum berjodoh.",
-                    komunikasi_mantan: "Sama sekali tidak ada komunikasi dengan mantan pasangan masa lalu.",
-                    trauma_hubungan: EXAMPLES_DB.trauma_hubungan,
-                    hubungan_tidak_sehat: "Tidak pernah terlibat sama sekali.",
-                    masa_lalu_wajib_tahu: EXAMPLES_DB.masa_lalu_wajib_tahu,
-                    batasan_teman_lawan_jenis: EXAMPLES_DB.batasan_teman_lawan_jenis,
-                    kesediaan_jujur_sebelum_lamaran: "Sangat bersedia demi keterbukaan",
-                    riwayat_penyakit: "Tidak ada riwayat penyakit berat atau kronis.",
-                    pengobatan_rutin: "Tidak sedang menjalani pengobatan medis apa pun.",
-                    riwayat_mental: EXAMPLES_DB.riwayat_mental,
-                    konsultasi_psikolog: "Belum pernah.",
-                    kesehatan_reproduksi: "Alhamdulillah dalam kondisi baik dan tidak ada keluhan medis.",
-                    medical_checkup: "Sangat Bersedia",
-                    alergi_pantangan: "Tidak ada alergi makanan atau obat-obatan tertentu.",
-                    hal_kesehatan_mempengaruhi_keluarga: EXAMPLES_DB.hal_kesehatan_mempengaruhi_keluarga,
-                    karakter_disukai: "Sabar, humoris santun, jujur, dan memiliki komitmen tinggi terhadap ibadah.",
-                    karakter_sulit_diterima: "Kasar dalam bertindak atau berucap, keras kepala, sombong, dan egois.",
-                    hal_paling_dihargai: "Saling menghargai usaha masing-masing pihak dan kejujuran yang utuh.",
-                    harapan_keluarga_pasangan: EXAMPLES_DB.harapan_keluarga_pasangan,
-                    deal_breaker: EXAMPLES_DB.deal_breaker,
-                    hal_bisa_dikompromikan: EXAMPLES_DB.hal_bisa_dikompromikan,
-                    wajib_dibahas_sebelum_lamaran: EXAMPLES_DB.wajib_dibahas_sebelum_lamaran,
-                    syarat_khusus: "Wajib mendapatkan restu dan rida sepenuhnya dari kedua belah pihak orang tua kandung."
-                };
-
-                setAnswers(mockAnswers);
-                setStep('form');
-                setFormStep(0);
-                showToast("Berhasil memuat formulir otomatis! Klik 'Lanjut' untuk memeriksa progres data.");
             };
 
             const questionsList = mode === 'basic' ? basicQuestions : advancedQuestions;
@@ -999,12 +972,12 @@
 
                 if (formStep < questionsList.length - 1) {
                     const nextStep = formStep + 1;
-                    setFormStep(nextStep);
+                    navigateTo('form', nextStep);
                     handleSaveCurrentProfile(true);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     handleSaveCurrentProfile(true);
-                    setStep('review_before_submit');
+                    navigateTo('review_before_submit');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             };
@@ -1012,11 +985,11 @@
             const handlePrev = () => {
                 if (formStep > 0) {
                     const prevStep = formStep - 1;
-                    setFormStep(prevStep);
+                    navigateTo('form', prevStep);
                     handleSaveCurrentProfile(true);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                    setStep('mode');
+                    navigateTo('mode');
                 }
             };
 
@@ -1064,8 +1037,7 @@
                     "Anda akan meningkatkan CV Anda ke Advanced Mode. Seluruh data dari Basic Mode yang sesuai akan dipertahankan. Lanjutkan?",
                     () => {
                         setMode('advanced');
-                        setFormStep(0);
-                        setStep('form');
+                        navigateTo('form', 0);
                         showToast("Berhasil upgrade ke Advanced Mode! Silakan lengkapi kategori tambahan.");
                     }
                 );
@@ -1106,25 +1078,15 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </div>
-                                <div onClick={() => isLoggedIn && setStep('home')} class="cursor-pointer">
+                                <div onClick={() => isLoggedIn && navigateTo('home')} class="cursor-pointer">
                                     <h1 class="text-sm sm:text-lg font-extrabold text-slate-800 tracking-tight leading-none sm:leading-tight">CV Ta’aruf</h1>
                                     <p class="text-[9px] sm:text-xs text-slate-500 font-medium">Faza Digital</p>
                                 </div>
                             </div>
 
                             <div class="flex items-center space-x-2 text-sm">
-                                {isLoggedIn && (
-                                    <button 
-                                        onClick={handleAutoFill}
-                                        class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] sm:text-xs px-2 sm:px-3 py-1.5 rounded-lg transition flex items-center space-x-1 shadow-sm"
-                                        title="Isi form otomatis untuk pengujian"
-                                    >
-                                        <span>⚡ Auto Fill</span>
-                                    </button>
-                                )}
-
                                 {isLoggedIn && step === 'form' && (
-                                    <span class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 mr-2">
                                         <span class="w-1.5 h-1.5 mr-1 bg-emerald-500 rounded-full animate-pulse"></span>
                                         {saveIndicator}
                                     </span>
@@ -1145,7 +1107,85 @@
                     {/* Main Content Area */}
                     <main class="flex-grow flex flex-col">
 
-                        {/* HOME / INTEGRATED LANDING PAGE */}
+                        {}
+                        {step === 'login' && (
+                            <div class="max-w-md w-full mx-auto my-auto px-4 sm:px-6 py-8">
+                                <div class="bg-gradient-to-b from-sage-50/40 to-white rounded-3xl border border-sage-100 p-6 sm:p-8 shadow-xl relative overflow-hidden text-left">
+                                    <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-sage-400 via-goldm-300 to-sage-400"></div>
+                                    
+                                    <div class="text-center mb-6">
+                                        <div class="w-14 h-14 bg-sage-50 rounded-2xl flex items-center justify-center text-sage-600 shadow-inner mx-auto mb-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                        </div>
+                                        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 serif-title">Akses Generator</h2>
+                                        <p class="text-xs text-slate-500 mt-1 font-medium">Masuk untuk menyusun dan mengelola dokumen CV Ta’aruf Anda (Faza Digital)</p>
+                                    </div>
+                                    
+                                    <form onSubmit={handleLogin} class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email:</label>
+                                            <input 
+                                                type="email" 
+                                                required 
+                                                placeholder="Masukkan email Anda..." 
+                                                value={loginEmail}
+                                                onChange={(e) => setLoginEmail(e.target.value)}
+                                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-sm text-slate-800"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Password (ada di email pembelian):</label>
+                                            <div class="relative">
+                                                <input 
+                                                    type={showPassword ? "text" : "password"} 
+                                                    required 
+                                                    placeholder="Masukkan password..." 
+                                                    value={loginPassword}
+                                                    onChange={(e) => setLoginPassword(e.target.value)}
+                                                    class="w-full pl-4 pr-16 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-sm text-slate-800 font-medium"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sage-600 hover:text-sage-700 select-none px-2 py-1 rounded hover:bg-sage-50 transition"
+                                                >
+                                                    {showPassword ? "Sembunyikan" : "Lihat"}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center justify-between pt-1">
+                                            <label class="flex items-center space-x-2.5 cursor-pointer select-none">
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={rememberMe}
+                                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                                    class="rounded border-slate-300 text-sage-600 focus:ring-sage-500 h-4 w-4 cursor-pointer"
+                                                />
+                                                <span class="text-xs text-slate-600 font-semibold">Ingat login info</span>
+                                            </label>
+                                        </div>
+
+                                        {loginError && (
+                                            <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                                                <p class="text-xs text-rose-600 font-semibold text-center">⚠️ {loginError}</p>
+                                            </div>
+                                        )}
+
+                                        <button 
+                                            type="submit"
+                                            class="w-full py-3 bg-sage-600 hover:bg-sage-700 text-white rounded-xl font-bold transition shadow-lg text-sm mt-2"
+                                        >
+                                            Masuk & Akses Generator
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+
+                        {}
                         {step === 'home' && (
                             <div class="max-w-4xl mx-auto my-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col justify-center items-center text-center">
                                 <div class="w-16 h-16 sm:w-20 sm:h-20 bg-sage-50 rounded-3xl flex items-center justify-center text-sage-600 shadow-inner mb-4 sm:mb-6">
@@ -1157,7 +1197,7 @@
                                     CV Ta’aruf Generator
                                 </h1>
                                 <p class="text-sm sm:text-base md:text-xl text-slate-600 mt-2 sm:mt-3 font-semibold">
-                                    Form assessment otomatis dari Faza Digital untuk membuat CV Ta'aruf yang elegan, informatif, dan praktis.
+                                    Form assessment otomatis untuk membuat CV Ta'aruf yang elegan, informatif dan praktis
                                 </p>
                                 
                                 <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 mt-6 shadow-sm max-w-2xl text-left space-y-4">
@@ -1172,183 +1212,107 @@
                                     </div>
                                 </div>
 
-                                {/* Integrated Login Gate directly inside the Landing page */}
-                                {!isLoggedIn ? (
-                                    <div class="max-w-md w-full bg-gradient-to-b from-sage-50/40 to-white rounded-3xl border border-sage-100 p-6 sm:p-8 shadow-xl mt-10 relative overflow-hidden text-left">
-                                        <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-sage-400 via-goldm-300 to-sage-400"></div>
+                                <div class="w-full max-w-2xl mt-8 text-left space-y-6">
+                                    {/* SAVED PROFILE LISTINGS PANEL */}
+                                    <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+                                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-4 flex items-center justify-between">
+                                            <span>📋 Daftar CV Tersimpan Anda</span>
+                                            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">{savedProfiles.length} Profil</span>
+                                        </h3>
                                         
-                                        <div class="text-center mb-6">
-                                            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 serif-title">Akses Generator</h2>
-                                            <p class="text-xs text-slate-500 mt-1 font-medium">Masuk untuk menyusun dan mengelola daftar CV Anda (Faza Digital)</p>
-                                        </div>
-                                        
-                                        <form onSubmit={handleLogin} class="space-y-4">
-                                            <div>
-                                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email:</label>
-                                                <input 
-                                                    type="email" 
-                                                    required 
-                                                    placeholder="Contoh: nama@email.com" 
-                                                    value={loginEmail}
-                                                    onChange={(e) => setLoginEmail(e.target.value)}
-                                                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-sm text-slate-800"
-                                                />
+                                        {savedProfiles.length === 0 ? (
+                                            <div class="text-center py-8 border border-dashed border-slate-200 rounded-xl">
+                                                <p class="text-xs text-slate-400 font-medium font-semibold">Belum ada CV yang disimpan di browser lokal ini.</p>
                                             </div>
-                                            <div>
-                                                <div class="flex justify-between items-center mb-1">
-                                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Password:</label>
-                                                </div>
-                                                <div class="relative">
-                                                    <input 
-                                                        type={showPassword ? "text" : "password"} 
-                                                        required 
-                                                        placeholder="Masukkan password..." 
-                                                        value={loginPassword}
-                                                        onChange={(e) => setLoginPassword(e.target.value)}
-                                                        class="w-full pl-4 pr-16 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-sm text-slate-800 font-medium"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-sage-600 hover:text-sage-700 select-none px-2 py-1 rounded hover:bg-sage-50 transition"
-                                                    >
-                                                        {showPassword ? "Sembunyikan" : "Lihat"}
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div class="flex items-center justify-between pt-1">
-                                                <label class="flex items-center space-x-2.5 cursor-pointer select-none">
-                                                    <input 
-                                                        type="checkbox"
-                                                        checked={rememberMe}
-                                                        onChange={(e) => setRememberMe(e.target.checked)}
-                                                        class="rounded border-slate-300 text-sage-600 focus:ring-sage-500 h-4 w-4 cursor-pointer"
-                                                    />
-                                                    <span class="text-xs text-slate-600 font-semibold">Ingat login info</span>
-                                                </label>
-                                            </div>
-
-                                            {loginError && (
-                                                <div class="p-3 bg-rose-50 border border-rose-100 rounded-xl">
-                                                    <p class="text-xs text-rose-600 font-semibold text-center">⚠️ {loginError}</p>
-                                                </div>
-                                            )}
-
-                                            <button 
-                                                type="submit"
-                                                class="w-full py-3 bg-sage-600 hover:bg-sage-700 text-white rounded-xl font-bold transition shadow-lg text-sm mt-2"
-                                            >
-                                                Masuk & Akses Generator
-                                            </button>
-                                        </form>
-                                    </div>
-                                ) : (
-                                    <div class="w-full max-w-2xl mt-8 text-left space-y-6">
-                                        
-                                        {/* SAVED PROFILE LISTINGS PANEL */}
-                                        <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-                                            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center justify-between">
-                                                <span>📋 Daftar CV Tersimpan Anda</span>
-                                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">{savedProfiles.length} Profil</span>
-                                            </h3>
-                                            
-                                            {savedProfiles.length === 0 ? (
-                                                <div class="text-center py-8 border border-dashed border-slate-200 rounded-xl">
-                                                    <p class="text-xs text-slate-400 font-medium">Belum ada CV yang disimpan di browser lokal ini.</p>
-                                                </div>
-                                            ) : (
-                                                <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
-                                                    {savedProfiles.map((profile) => (
-                                                        <div key={profile.id} class="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100/50 rounded-xl border border-slate-200/60 transition gap-4">
-                                                            <div class="min-w-0">
-                                                                <span class="font-semibold text-sm text-slate-800 block truncate">{profile.name}</span>
-                                                                <span class="text-[10px] text-slate-400 font-semibold uppercase block mt-0.5">
-                                                                    {profile.gender} • {profile.mode} • Diperbarui {new Date(profile.updatedAt).toLocaleDateString('id-ID')}
-                                                                </span>
-                                                            </div>
-                                                            <div class="flex items-center space-x-1.5 flex-shrink-0">
-                                                                <button
-                                                                    onClick={() => handleLoadProfile(profile)}
-                                                                    class="px-3 py-1.5 bg-sage-600 hover:bg-sage-700 text-white text-[11px] font-bold rounded-lg transition"
-                                                                >
-                                                                    ✏️ Buka
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDeleteProfile(profile.id, profile.name)}
-                                                                    class="px-2 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-bold rounded-lg transition"
-                                                                >
-                                                                    🗑️ Hapus
-                                                                </button>
-                                                            </div>
+                                        ) : (
+                                            <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                                                {savedProfiles.map((profile) => (
+                                                    <div key={profile.id} class="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100/50 rounded-xl border border-slate-200/60 transition gap-4">
+                                                        <div class="min-w-0">
+                                                            <span class="font-semibold text-sm text-slate-800 block truncate">{profile.name}</span>
+                                                            <span class="text-[10px] text-slate-400 font-semibold uppercase block mt-0.5">
+                                                                {profile.gender} • {profile.mode} • Diperbarui {new Date(profile.updatedAt).toLocaleDateString('id-ID')}
+                                                            </span>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* MULTI PROFILE CONTROLS */}
-                                        <div class="flex flex-col sm:flex-row gap-3">
-                                            <button 
-                                                onClick={handleStartNewCV}
-                                                class="flex-1 py-4 bg-sage-600 text-white rounded-xl shadow-lg shadow-sage-600/10 hover:bg-sage-700 transition duration-300 font-bold text-center flex items-center justify-center space-x-2"
-                                            >
-                                                <span>➕ Mulai Buat CV Baru</span>
-                                            </button>
-                                        </div>
+                                                        <div class="flex items-center space-x-1.5 flex-shrink-0">
+                                                            <button
+                                                                onClick={() => handleLoadProfile(profile)}
+                                                                class="px-3 py-1.5 bg-sage-600 hover:bg-sage-700 text-white text-[11px] font-bold rounded-lg transition"
+                                                            >
+                                                                ✏️ Buka
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteProfile(profile.id, profile.name)}
+                                                                class="px-2 py-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 text-[11px] font-bold rounded-lg transition"
+                                                            >
+                                                                🗑️ Hapus
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+
+                                    {/* CONTROLS */}
+                                    <button 
+                                        onClick={handleStartNewCV}
+                                        class="w-full py-4 bg-sage-600 text-white rounded-xl shadow-lg shadow-sage-600/10 hover:bg-sage-700 transition duration-300 font-bold text-center flex items-center justify-center space-x-2"
+                                    >
+                                        <span>➕ Mulai Buat CV Baru</span>
+                                    </button>
+                                </div>
                             </div>
                         )}
 
-                        {/* SELECT GENDER SCREEN */}
+                        {}
                         {step === 'gender' && (
                             <div class="max-w-2xl mx-auto my-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col justify-center text-center">
                                 <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 serif-title">Pilih Jenis Kelamin</h2>
-                                <p class="text-xs sm:text-sm text-slate-500 mt-2">Beberapa pertanyaan dan label penulisan CV akan menyesuaikan dengan jenis kelaminmu agar lebih sopan & syar'i.</p>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-2 font-medium">Beberapa pertanyaan dan label penulisan CV akan menyesuaikan dengan jenis kelaminmu agar lebih sopan & syar'i.</p>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-8 sm:mt-10">
                                     <button 
-                                        onClick={() => { setGender('ikhwan'); setStep('mode'); }}
+                                        onClick={() => { setGender('ikhwan'); navigateTo('mode'); }}
                                         class={`p-6 sm:p-8 bg-white border-2 rounded-2xl text-left hover:shadow-md transition duration-300 flex flex-col items-center justify-center space-y-3 ${gender === 'ikhwan' ? 'border-sage-600 bg-sage-50/50' : 'border-slate-100'}`}
                                     >
-                                        <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl">
+                                        <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl shadow-inner">
                                             🧔🏻‍♂️
                                         </div>
                                         <div class="text-center">
                                             <h3 class="font-bold text-base sm:text-lg text-slate-800">Saya laki-laki / ikhwan</h3>
-                                            <p class="text-[11px] sm:text-xs text-slate-400 mt-1">Struktur CV dengan penanggung jawab nafkah, pembimbing rumah tangga.</p>
+                                            <p class="text-[11px] sm:text-xs text-slate-400 mt-1 font-semibold">Struktur CV dengan penanggung jawab nafkah, pembimbing rumah tangga.</p>
                                         </div>
                                     </button>
 
                                     <button 
-                                        onClick={() => { setGender('akhwat'); setStep('mode'); }}
+                                        onClick={() => { setGender('akhwat'); navigateTo('mode'); }}
                                         class={`p-6 sm:p-8 bg-white border-2 rounded-2xl text-left hover:shadow-md transition duration-300 flex flex-col items-center justify-center space-y-3 ${gender === 'akhwat' ? 'border-sage-600 bg-sage-50/50' : 'border-slate-100'}`}
                                     >
-                                        <div class="w-14 h-14 bg-pink-50 text-pink-600 rounded-full flex items-center justify-center text-2xl">
+                                        <div class="w-14 h-14 bg-pink-50 text-pink-600 rounded-full flex items-center justify-center text-2xl shadow-inner">
                                             🧕🏻
                                         </div>
                                         <div class="text-center">
                                             <h3 class="font-bold text-base sm:text-lg text-slate-800">Saya perempuan / akhwat</h3>
-                                            <p class="text-[11px] sm:text-xs text-slate-400 mt-1">Struktur CV dengan wali nikah, ketaatan, dan peran keibuan.</p>
+                                            <p class="text-[11px] sm:text-xs text-slate-400 mt-1 font-semibold">Struktur CV dengan wali nikah, ketaatan, dan peran keibuan.</p>
                                         </div>
                                     </button>
                                 </div>
 
                                 <div class="mt-8 flex justify-between">
-                                    <button onClick={() => setStep('home')} class="px-5 py-2.5 text-xs sm:text-sm text-slate-500 hover:bg-slate-100 rounded-lg transition font-medium">
+                                    <button onClick={() => navigateTo('home')} class="px-5 py-2.5 text-xs sm:text-sm text-slate-500 hover:bg-slate-100 rounded-lg transition font-medium">
                                         Kembali
                                     </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* SELECT CV MODE SCREEN */}
+                        {}
                         {step === 'mode' && (
                             <div class="max-w-4xl mx-auto my-auto px-4 sm:px-6 py-8 sm:py-12">
                                 <div class="text-center">
                                     <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 serif-title">Pilih Mode CV</h2>
-                                    <p class="text-xs sm:text-sm text-slate-500 mt-2 max-w-xl mx-auto">Sesuaikan kedalaman informasi yang ingin kamu buka berdasarkan sejauh mana proses perkenalan ta’arufmu saat ini.</p>
+                                    <p class="text-xs sm:text-sm text-slate-500 mt-2 max-w-xl mx-auto font-medium font-semibold">Sesuaikan kedalaman informasi yang ingin kamu buka berdasarkan sejauh mana proses perkenalan ta’arufmu saat ini.</p>
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-8 sm:mt-10">
@@ -1358,11 +1322,11 @@
                                                 Tahap Awal Kenalan
                                             </div>
                                             <h3 class="text-lg sm:text-xl font-bold text-slate-800">Basic Mode</h3>
-                                            <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+                                            <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed font-medium">
                                                 Cocok untuk baru mengenal seseorang, masih screening ringan, belum melibatkan keluarga secara penuh, dan belum nyaman membuka data pribadi lengkap.
                                             </p>
                                             
-                                            <ul class="mt-4 sm:mt-6 space-y-2 text-xs sm:text-sm text-slate-600">
+                                            <ul class="mt-4 sm:mt-6 space-y-2 text-xs sm:text-sm text-slate-600 font-semibold">
                                                 <li class="flex items-center">
                                                     <span class="text-emerald-500 mr-2">✓</span> CV Ringkas & Terorganisir
                                                 </li>
@@ -1375,7 +1339,7 @@
                                             </ul>
                                         </div>
                                         <button 
-                                            onClick={() => { setMode('basic'); setFormStep(0); setStep('form'); }}
+                                            onClick={() => { setMode('basic'); navigateTo('form', 0); }}
                                             class="w-full mt-6 sm:mt-8 py-3 bg-sage-600 hover:bg-sage-700 text-white rounded-xl font-semibold text-sm transition"
                                         >
                                             Mulai Basic Mode
@@ -1388,11 +1352,11 @@
                                                 Tahap Serius / Khitbah
                                             </div>
                                             <h3 class="text-lg sm:text-xl font-bold text-slate-800">Advanced Mode</h3>
-                                            <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
-                                                Cocok untuk yang sudah siap melangkah serius menuju khitbah (lamaran), sudah siap melibatkan wali/keluarga, serta membahas keluarga, finansial, kesehatan, visi pernikahan, dan deal-breaker.
+                                            <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed font-medium">
+                                                Cocok untuk yang sudah siap melangkah serius menuju khitbah (lamaran), sudah siap melibatkan wali/keluarga, serta membahas keluarga, finansial, kesehatan, visi pernikahan, dan deal breaker.
                                             </p>
                                             
-                                            <ul class="mt-4 sm:mt-6 space-y-2 text-xs sm:text-sm text-slate-600">
+                                            <ul class="mt-4 sm:mt-6 space-y-2 text-xs sm:text-sm text-slate-600 font-semibold">
                                                 <li class="flex items-center">
                                                     <span class="text-emerald-500 mr-2">✓</span> CV Komprehensif Tanpa Batasan
                                                 </li>
@@ -1405,7 +1369,7 @@
                                             </ul>
                                         </div>
                                         <button 
-                                            onClick={() => { setMode('advanced'); setFormStep(0); setStep('form'); }}
+                                            onClick={() => { setMode('advanced'); navigateTo('form', 0); }}
                                             class="w-full mt-6 sm:mt-8 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-semibold text-sm transition"
                                         >
                                             Mulai Advanced Mode
@@ -1413,19 +1377,23 @@
                                     </div>
                                 </div>
 
+                                <p class="text-center text-[11px] sm:text-xs text-slate-400 mt-6 max-w-lg mx-auto font-medium italic leading-relaxed">
+                                    * Kamu bebas memilih mode sesuai kesiapan. Tidak semua informasi harus dibuka di awal. Untuk tahap kenalan ringan, gunakan Basic Mode. Untuk proses yang sudah serius menuju lamaran, gunakan Advanced Mode.
+                                </p>
+
                                 <div class="mt-6 sm:mt-8 flex justify-between font-medium text-xs sm:text-sm">
-                                    <button onClick={() => setStep('gender')} class="px-5 py-2.5 text-slate-500 hover:bg-slate-100 rounded-lg transition">
+                                    <button onClick={() => navigateTo('gender')} class="px-5 py-2.5 text-slate-500 hover:bg-slate-100 rounded-lg transition">
                                         Kembali
                                     </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* MULTI STEP WIZARD FORM */}
+                        {}
                         {step === 'form' && (
                             <div class="max-w-6xl mx-auto px-4 py-6 sm:py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 relative">
                                 
-                                {/* Sidebar Categories - Desktop Drawer */}
+                                {/* Sidebar Categories */}
                                 <div class={`lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-4 self-start shadow-sm space-y-1 lg:block ${isMobileNavOpen ? 'block fixed inset-0 z-50 overflow-y-auto m-4' : 'hidden'}`}>
                                     <div class="flex justify-between items-center mb-3 lg:mb-4 px-3">
                                         <h4 class="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">Lompat ke Kategori</h4>
@@ -1444,7 +1412,7 @@
                                                 <button
                                                     key={idx}
                                                     onClick={() => { 
-                                                        setFormStep(idx); 
+                                                        navigateTo('form', idx);
                                                         handleSaveCurrentProfile(true);
                                                         setIsMobileNavOpen(false);
                                                     }}
@@ -1460,7 +1428,7 @@
                                     </div>
 
                                     <div class="pt-4 border-t border-slate-100 mt-4 px-3 text-[10px] sm:text-[11px] text-slate-400 leading-relaxed space-y-2 font-medium">
-                                        <p>✨ Klik kategori di atas untuk mengedit bagian tertentu.</p>
+                                        <p>✨ Klik kategori di atas untuk lompat edit cepat.</p>
                                         <p>🔒 Data tersimpan otomatis di browser lokal Anda.</p>
                                     </div>
                                 </div>
@@ -1468,7 +1436,7 @@
                                 {/* Form Body Area */}
                                 <div class="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm flex flex-col justify-between">
                                     <div>
-                                        {/* Mobile Header indicator and selector button */}
+                                        {/* Mobile Header Menu Trigger */}
                                         <div class="lg:hidden flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                                             <button 
                                                 onClick={() => setIsMobileNavOpen(true)}
@@ -1493,7 +1461,7 @@
                                         </div>
 
                                         <h3 class="text-xl sm:text-2xl font-bold text-slate-800 serif-title">{activeCategory.categoryTitle}</h3>
-                                        <p class="text-[11px] sm:text-xs text-slate-500 mt-1 mb-6 leading-relaxed">{activeCategory.description}</p>
+                                        <p class="text-[11px] sm:text-xs text-slate-500 mt-1 mb-6 leading-relaxed font-semibold">{activeCategory.description}</p>
 
                                         {/* Dynamic Form Fields */}
                                         <div class="space-y-5">
@@ -1566,7 +1534,7 @@
                                                                                 }}
                                                                                 class="rounded border-slate-300 text-sage-600 focus:ring-sage-500 h-4 w-4"
                                                                             />
-                                                                            <span class="text-slate-700 font-medium">{opt}</span>
+                                                                            <span class="text-slate-700 font-semibold">{opt}</span>
                                                                         </label>
                                                                     );
                                                                 })}
@@ -1581,7 +1549,7 @@
                                                                     value={value}
                                                                     onChange={(e) => handleAnswerChange(field.id, e.target.value)}
                                                                     placeholder={field.placeholder}
-                                                                    class="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-xs sm:text-sm text-slate-800 leading-relaxed"
+                                                                    class="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-xs sm:text-sm text-slate-800 leading-relaxed font-medium"
                                                                 ></textarea>
                                                                 
                                                                 <div class="flex justify-end">
@@ -1625,7 +1593,7 @@
                                                             <select
                                                                 value={value}
                                                                 onChange={(e) => handleAnswerChange(field.id, e.target.value)}
-                                                                class="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-xs sm:text-sm text-slate-800"
+                                                                class="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-sage-500 focus:border-sage-500 outline-none transition text-xs sm:text-sm text-slate-800 font-medium"
                                                             >
                                                                 <option value="">-- Pilih salah satu --</option>
                                                                 {field.options.map((opt, oIdx) => (
@@ -1644,7 +1612,7 @@
                                                                     onChange={() => handleToggleHideField(field.id)}
                                                                     class="rounded border-slate-300 text-sage-600 focus:ring-sage-500 h-3.5 w-3.5 cursor-pointer"
                                                                 />
-                                                                <label htmlFor={`hide_${field.id}`} class="text-[10px] sm:text-xs text-slate-400 cursor-pointer select-none font-semibold hover:text-slate-600">
+                                                                <label htmlFor={`hide_${field.id}`} class="text-[10px] sm:text-xs text-slate-400 cursor-pointer select-none font-bold hover:text-slate-600">
                                                                     Sembunyikan dari lembar CV cetak (Simpan di draf saja)
                                                                 </label>
                                                             </div>
@@ -1691,12 +1659,12 @@
                             </div>
                         )}
 
-                        {/* REVIEW BEFORE SUBMIT PAGE */}
+                        {}
                         {step === 'review_before_submit' && (
                             <div class="max-w-3xl mx-auto my-auto px-4 sm:px-6 py-6 sm:py-8 w-full">
                                 <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 md:p-8 shadow-md">
                                     <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 serif-title">Cek Data Kamu Dulu</h2>
-                                    <p class="text-xs sm:text-sm text-slate-500 mt-1">Harap tinjau ringkasan kelengkapan berkas Anda sebelum melangkah ke layout preview dokumen.</p>
+                                    <p class="text-xs sm:text-sm text-slate-500 mt-1 font-semibold">Harap tinjau ringkasan kelengkapan berkas Anda sebelum melangkah ke layout preview dokumen.</p>
                                     
                                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
                                         <div>
@@ -1723,17 +1691,17 @@
                                                 return (
                                                     <div 
                                                         key={idx}
-                                                        onClick={() => { setFormStep(idx); setStep('form'); }}
+                                                        onClick={() => { navigateTo('form', idx); }}
                                                         class="p-3 rounded-xl border border-slate-100 hover:border-sage-200 hover:bg-sage-50/30 transition cursor-pointer flex justify-between items-center text-xs"
                                                     >
                                                         <div>
-                                                            <span class="font-semibold text-slate-700 block">{cat.categoryTitle}</span>
-                                                            <span class="text-[10px] text-slate-400 mt-0.5">{stats.filled} dari {stats.total} kolom terisi ({stats.percent}%)</span>
+                                                            <span class="font-bold text-slate-700 block">{cat.categoryTitle}</span>
+                                                            <span class="text-[10px] text-slate-400 mt-0.5 font-semibold">{stats.filled} dari {stats.total} kolom terisi ({stats.percent}%)</span>
                                                         </div>
                                                         {isFullyComplete ? (
-                                                            <span class="bg-emerald-50 text-emerald-700 font-bold px-2 py-1 rounded text-[9px]">Lengkap</span>
+                                                            <span class="bg-emerald-50 text-emerald-700 font-extrabold px-2 py-1 rounded text-[9px]">Lengkap</span>
                                                         ) : (
-                                                            <span class="bg-amber-50 text-amber-700 font-bold px-2 py-1 rounded text-[9px]">Ada Kosong</span>
+                                                            <span class="bg-amber-50 text-amber-700 font-extrabold px-2 py-1 rounded text-[9px]">Ada Kosong</span>
                                                         )}
                                                     </div>
                                                 );
@@ -1743,14 +1711,14 @@
 
                                     <div class="mt-8 flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100">
                                         <button 
-                                            onClick={() => { setStep('form'); }}
-                                            class="w-full sm:w-1/2 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-medium text-xs sm:text-sm transition text-center"
+                                            onClick={() => { navigateTo('form', 0); }}
+                                            class="w-full sm:w-1/2 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-semibold text-xs sm:text-sm transition text-center"
                                         >
                                             Edit Bagian yang Belum Lengkap
                                         </button>
                                         <button 
-                                            onClick={() => setStep('template_select')}
-                                            class="w-full sm:w-1/2 py-3 bg-sage-600 hover:bg-sage-700 text-white rounded-xl font-semibold text-xs sm:text-sm transition shadow-md text-center"
+                                            onClick={() => navigateTo('template_select')}
+                                            class="w-full sm:w-1/2 py-3 bg-sage-600 hover:bg-sage-700 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-md text-center"
                                         >
                                             Lanjut Pilih Template
                                         </button>
@@ -1759,29 +1727,29 @@
                             </div>
                         )}
 
-                        {/* CHOOSE TEMPLATE LAYOUT */}
+                        {}
                         {step === 'template_select' && (
                             <div class="max-w-6xl mx-auto my-auto px-4 sm:px-6 py-8 sm:py-12">
                                 <div class="text-center mb-8">
                                     <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 serif-title">Pilih Gaya Template CV</h2>
-                                    <p class="text-xs sm:text-sm text-slate-500 mt-1">Sesuaikan karakter visual presentasi dokumen CV Ta'aruf Anda dengan 10 pilihan warna & layout premium.</p>
+                                    <p class="text-xs sm:text-sm text-slate-500 mt-1 font-semibold">Sesuaikan karakter visual presentasi dokumen CV Ta'aruf Anda dengan 10 pilihan warna & layout premium.</p>
                                 </div>
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                     {Object.values(TEMPLATES_CONFIG).map((temp) => (
                                         <button 
                                             key={temp.id}
                                             onClick={() => setSelectedTemplate(temp.id)}
-                                            class={`p-4 bg-white border-2 rounded-2xl text-left transition duration-300 flex flex-col justify-between ${selectedTemplate === temp.id ? 'border-sage-600 bg-sage-50/20' : 'border-slate-200 hover:border-slate-300'}`}
+                                            class={`p-4 bg-white border-2 rounded-2xl text-left transition duration-300 flex flex-col justify-between ${selectedTemplate === temp.id ? 'border-sage-600 bg-sage-50/20 shadow-inner' : 'border-slate-200 hover:border-slate-300'}`}
                                         >
                                             <div class="min-h-[110px]">
                                                 <span class="text-[9px] font-bold text-slate-400 block uppercase">Gaya Visual</span>
-                                                <h3 class="text-sm font-bold text-slate-800 mt-1">{temp.name}</h3>
-                                                <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed truncate-3-lines">
+                                                <h3 class="text-xs sm:text-sm font-bold text-slate-800 mt-1">{temp.name}</h3>
+                                                <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed font-semibold">
                                                     Paduan font dan ornamen peluru "{temp.bulletPoint}" yang didesain estetik dan rapi.
                                                 </p>
                                             </div>
-                                            <div class="w-full text-center text-[11px] font-bold py-1.5 bg-slate-50 border border-slate-100 rounded-lg mt-3 text-slate-600">
+                                            <div class="w-full text-center text-[10px] sm:text-[11px] font-extrabold py-1.5 bg-slate-50 border border-slate-100 rounded-lg mt-3 text-slate-600">
                                                 {selectedTemplate === temp.id ? "✓ Terpilih" : "Gunakan"}
                                             </div>
                                         </button>
@@ -1789,13 +1757,13 @@
                                 </div>
 
                                 <div class="mt-10 flex justify-between">
-                                    <button onClick={() => setStep('review_before_submit')} class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-medium text-xs sm:text-sm transition">
+                                    <button onClick={() => navigateTo('review_before_submit')} class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-semibold text-xs sm:text-sm transition">
                                         Kembali
                                     </button>
                                     <button 
                                         onClick={() => { 
                                             handleSaveCurrentProfile(true);
-                                            setStep('preview'); 
+                                            navigateTo('preview'); 
                                             window.scrollTo({ top: 0, behavior: 'smooth' }); 
                                         }}
                                         class="px-7 py-2.5 bg-sage-600 hover:bg-sage-700 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-md"
@@ -1806,7 +1774,7 @@
                             </div>
                         )}
 
-                        {/* PREVIEW & PRINT/EXPORT PORTRAIT VIEWPORT */}
+                        {}
                         {step === 'preview' && (
                             <div class="bg-slate-100 py-6 sm:py-10 px-2 sm:px-4 min-h-screen flex flex-col items-center">
                                 
@@ -1814,8 +1782,8 @@
                                 <div class="w-full max-w-5xl bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm mb-6 no-print text-center md:text-left">
                                     <div class="md:flex md:items-center md:justify-between">
                                         <div>
-                                            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 serif-title">Preview CV Ta’aruf Kamu</h2>
-                                            <p class="text-[11px] sm:text-xs text-slate-500 mt-1">
+                                            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 serif-title font-bold">Preview CV Ta’aruf Kamu</h2>
+                                            <p class="text-[11px] sm:text-xs text-slate-500 mt-1 font-semibold">
                                                 Silakan cek kembali data yang sudah tersusun. Jika ada yang ingin diperbaiki, klik tombol Edit Data sebelum mengunduh CV.
                                             </p>
                                         </div>
@@ -1827,14 +1795,14 @@
                                                 <span>💾 Simpan Profil</span>
                                             </button>
                                             <button 
-                                                onClick={() => { setStep('form'); setFormStep(0); }} 
-                                                class="px-3.5 py-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 transition"
+                                                onClick={() => { navigateTo('form', 0); }} 
+                                                class="px-3.5 py-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-bold text-slate-700 transition"
                                             >
                                                 ✏️ Edit Data
                                             </button>
                                             <button 
                                                 onClick={printCV} 
-                                                class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition"
+                                                class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition"
                                             >
                                                 🖨️ Cetak CV
                                             </button>
@@ -1847,7 +1815,6 @@
                                         </div>
                                     </div>
                                     
-                                    {/* Action Buttons & Template switcher */}
                                     <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
                                         <div class="flex flex-wrap gap-2 justify-center">
                                             {mode === 'basic' && (
@@ -1859,7 +1826,7 @@
                                                 </button>
                                             )}
                                             <button 
-                                                onClick={() => setStep('home')}
+                                                onClick={() => navigateTo('home')}
                                                 class="bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-[10px] sm:text-xs px-3 py-2 rounded-lg transition border"
                                             >
                                                 🏛️ Kembali ke Utama
@@ -1886,17 +1853,16 @@
                                         </div>
                                     </div>
 
-                                    {/* Mobile Responsive Zoom Suggestion */}
                                     <p class="md:hidden text-[10px] text-slate-400 text-center mt-3 font-semibold">
                                         📱 Tips HP: Geser layar ke samping untuk melihat tampilan halaman secara penuh.
                                     </p>
                                 </div>
 
-                                {}
+                                {/* Printable Sheet Wrapper */}
                                 <div class="preview-scroll-wrapper py-2">
                                     <div id="cv-printable-area" class={`cv-preview-sheet ${tStyles.container} ${tStyles.fontClass}`}>
                                         
-                                        {/* PAGE 1: COVER PAGE (MINIMALIST & PREMIUM) */}
+                                        {/* PAGE 1: COVER PAGE */}
                                         <div class="cv-page min-h-[260mm] flex flex-col justify-between py-12 text-center">
                                             <div class="text-slate-400 font-bold tracking-widest text-xs uppercase pt-8">
                                                 {tStyles.bulletPoint} Dokumen Pribadi & Rahasia {tStyles.bulletPoint}
@@ -1919,11 +1885,11 @@
                                             </div>
 
                                             <div class="space-y-2 pb-8">
-                                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Format Dokumen</span>
+                                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block font-bold">Format Dokumen</span>
                                                 <span class="px-3 py-1 bg-slate-100 rounded text-[10px] text-slate-600 font-bold uppercase tracking-wider">
                                                     {mode === 'basic' ? 'Basic Mode Assessment' : 'Advanced Mode Assessment'}
                                                 </span>
-                                                <p class="text-[10px] text-slate-400 mt-2">Dibuat pada {getCurrentDateFormatted()} • Faza Digital</p>
+                                                <p class="text-[10px] text-slate-400 mt-2 font-bold">Dibuat pada {getCurrentDateFormatted()} • Faza Digital</p>
                                             </div>
                                         </div>
 
@@ -1938,7 +1904,7 @@
                                                 </div>
 
                                                 <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mt-10 items-start">
-                                                    {/* Left Aesthetic Stat Panel with integrated contact information */}
+                                                    {/* Left Aesthetic Stat Panel with contact metadata */}
                                                     <div class="md:col-span-5 p-6 bg-slate-50 rounded-2xl border border-slate-100 text-center space-y-4 shadow-sm">
                                                         <div class="w-20 h-20 mx-auto bg-white rounded-full border shadow-inner flex items-center justify-center text-3xl">
                                                             {gender === 'ikhwan' ? '🧔🏻‍♂️' : '🧕🏻'}
@@ -1953,22 +1919,22 @@
                                                             <p>💼 {answers.pekerjaan_saat_ini || 'Belum diisi'}</p>
                                                         </div>
 
-                                                        {/* Integrated Contact info directly here */}
+                                                        {/* Integrated Contact Info */}
                                                         {(answers.no_hp || answers.email || answers.sosial_media) && (
                                                             <div class="pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-1.5">
-                                                                <span class="text-[9px] text-slate-400 font-bold block uppercase tracking-wider mb-1 text-center">Informasi Kontak</span>
-                                                                {answers.no_hp && !hiddenFields.no_hp && <p class="truncate text-slate-700">📞 <span class="font-semibold">{answers.no_hp}</span></p>}
-                                                                {answers.email && !hiddenFields.email && <p class="truncate text-slate-700">📧 <span class="font-semibold">{answers.email}</span></p>}
-                                                                {answers.sosial_media && !hiddenFields.sosial_media && <p class="truncate text-slate-700">📱 <span class="font-semibold">{answers.sosial_media}</span></p>}
+                                                                <span class="text-[9px] text-slate-400 font-bold block uppercase tracking-wider mb-1 text-center font-bold">Informasi Kontak</span>
+                                                                {answers.no_hp && !hiddenFields.no_hp && <p class="truncate text-slate-700">📞 <span class="font-bold">{answers.no_hp}</span></p>}
+                                                                {answers.email && !hiddenFields.email && <p class="truncate text-slate-700">📧 <span class="font-bold">{answers.email}</span></p>}
+                                                                {answers.sosial_media && !hiddenFields.sosial_media && <p class="truncate text-slate-700">📱 <span class="font-bold">{answers.sosial_media}</span></p>}
                                                             </div>
                                                         )}
                                                     </div>
 
-                                                    {/* Right highlighted attributes table */}
+                                                    {/* Right Highlight Panel */}
                                                     <div class="md:col-span-7 space-y-5">
                                                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Atribut Utama Kesiapan</h4>
                                                         
-                                                        <div class="grid grid-cols-2 gap-3 text-xs sm:text-sm">
+                                                        <div class="grid grid-cols-2 gap-3 text-xs sm:text-sm font-semibold">
                                                             <div class="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
                                                                 <span class="text-[9px] text-slate-400 font-bold block uppercase">Status Pernikahan</span>
                                                                 <span class="font-bold text-slate-700">{answers.status_pernikahan || 'Belum diisi'}</span>
@@ -1990,7 +1956,7 @@
                                                         </div>
 
                                                         {answers.prinsip_agama && !hiddenFields.prinsip_agama && (
-                                                            <div class="p-4 rounded-xl bg-amber-50/40 border border-amber-100 text-xs sm:text-sm italic">
+                                                            <div class="p-4 rounded-xl bg-amber-50/40 border border-amber-100 text-xs sm:text-sm italic font-medium">
                                                                 <span class="text-[9px] text-amber-800 font-bold block uppercase not-italic mb-1">Prinsip Hidup Utama</span>
                                                                 "{answers.prinsip_agama}"
                                                             </div>
@@ -2004,6 +1970,7 @@
                                             </div>
                                         </div>
 
+                                        {}
                                         {/* PAGE 3: DATA DIRI & GAMBARAN PRIBADI */}
                                         {(!hiddenFields.nama_lengkap || !hiddenFields.nama_panggilan || !hiddenFields.usia || !hiddenFields.domisili_saat_ini || !hiddenFields.asal_daerah || !hiddenFields.pendidikan_terakhir || !hiddenFields.pekerjaan_saat_ini || !hiddenFields.status_pernikahan || !hiddenFields.cerita_diri || !hiddenFields.kelebihan_utama || !hiddenFields.hal_diperbaiki || !hiddenFields.hobi) && (
                                             <div class="cv-page min-h-[260mm] flex flex-col justify-between py-10">
@@ -2011,7 +1978,7 @@
                                                     <h3 class={`${tStyles.categoryHeader} text-center uppercase tracking-wide text-xl sm:text-2xl font-bold`}>
                                                         1. Profil Lengkap & Karakter Diri
                                                     </h3>
-                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6 text-xs sm:text-sm mt-6">
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6 text-xs sm:text-sm mt-6 font-semibold">
                                                         {answers.nama_lengkap && !hiddenFields.nama_lengkap && (
                                                             <div class="md:col-span-2 border-b border-slate-100 pb-1.5">
                                                                 <span class="text-[10px] text-slate-400 font-bold block uppercase">Nama Lengkap</span>
@@ -2020,82 +1987,82 @@
                                                         )}
                                                         {answers.nama_panggilan && !hiddenFields.nama_panggilan && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Nama Panggilan</span>
-                                                                <span class="font-semibold text-slate-800">{answers.nama_panggilan}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Nama Panggilan</span>
+                                                                <span class="text-slate-800 font-bold">{answers.nama_panggilan}</span>
                                                             </div>
                                                         )}
                                                         {answers.usia && !hiddenFields.usia && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Usia & Gender</span>
-                                                                <span class="font-semibold text-slate-800">{answers.usia} Tahun / {getGenderLabel()}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Usia & Gender</span>
+                                                                <span class="text-slate-800 font-bold">{answers.usia} Tahun / {getGenderLabel()}</span>
                                                             </div>
                                                         )}
                                                         {answers.tempat_tanggal_lahir && !hiddenFields.tempat_tanggal_lahir && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Tempat & Tanggal Lahir</span>
-                                                                <span class="font-semibold text-slate-800">{answers.tempat_tanggal_lahir}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Tempat & Tanggal Lahir</span>
+                                                                <span class="text-slate-800 font-bold">{answers.tempat_tanggal_lahir}</span>
                                                             </div>
                                                         )}
                                                         {answers.domisili_saat_ini && !hiddenFields.domisili_saat_ini && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Domisili</span>
-                                                                <span class="font-semibold text-slate-800">{answers.domisili_saat_ini}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Domisili</span>
+                                                                <span class="text-slate-800 font-bold">{answers.domisili_saat_ini}</span>
                                                             </div>
                                                         )}
                                                         {answers.asal_daerah && !hiddenFields.asal_daerah && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Asal / Suku</span>
-                                                                <span class="font-semibold text-slate-800">{answers.asal_daerah}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Asal / Suku</span>
+                                                                <span class="text-slate-800 font-bold">{answers.asal_daerah}</span>
                                                             </div>
                                                         )}
                                                         {answers.status_pernikahan && !hiddenFields.status_pernikahan && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Status Pernikahan</span>
-                                                                <span class="font-semibold text-slate-800">{answers.status_pernikahan}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Status Pernikahan</span>
+                                                                <span class="text-slate-800 font-bold">{answers.status_pernikahan}</span>
                                                             </div>
                                                         )}
                                                         {answers.pernah_menikah_sebelumnya && !hiddenFields.pernah_menikah_sebelumnya && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Pernah Menikah Sebelumnya</span>
-                                                                <span class="font-semibold text-slate-800">{answers.pernah_menikah_sebelumnya}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Pernah Menikah Sebelumnya</span>
+                                                                <span class="text-slate-800 font-bold">{answers.pernah_menikah_sebelumnya}</span>
                                                             </div>
                                                         )}
                                                         {answers.kapan_bercerai && !hiddenFields.kapan_bercerai && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Kapan Berpisah / Bercerai</span>
-                                                                <span class="font-semibold text-slate-800">{answers.kapan_bercerai}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Kapan Berpisah / Bercerai</span>
+                                                                <span class="text-slate-800 font-bold">{answers.kapan_bercerai}</span>
                                                             </div>
                                                         )}
                                                         {answers.memiliki_anak && !hiddenFields.memiliki_anak && (
                                                             <div class="md:col-span-2">
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Informasi Anak & Pengasuhan</span>
-                                                                <p class="text-slate-800 whitespace-pre-line font-medium mt-0.5">{answers.memiliki_anak}</p>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Informasi Anak & Pengasuhan</span>
+                                                                <p class="text-slate-800 whitespace-pre-line mt-0.5 font-bold">{answers.memiliki_anak}</p>
                                                             </div>
                                                         )}
                                                     </div>
 
-                                                    <div class="mt-8 space-y-4 text-xs sm:text-sm">
+                                                    <div class="mt-8 space-y-4 text-xs sm:text-sm leading-relaxed">
                                                         {answers.cerita_diri && !hiddenFields.cerita_diri && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Deskripsi Diri Singkat</span>
-                                                                <p class="whitespace-pre-line text-slate-800 leading-relaxed font-medium">{answers.cerita_diri}</p>
+                                                                <p class="whitespace-pre-line text-slate-800 font-semibold">{answers.cerita_diri}</p>
                                                             </div>
                                                         )}
                                                         {answers.kelebihan_utama && !hiddenFields.kelebihan_utama && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Kelebihan Utama</span>
-                                                                <div class="text-slate-800 font-medium">{renderTextContent(answers.kelebihan_utama)}</div>
+                                                                <div class="text-slate-800 font-semibold">{renderTextContent(answers.kelebihan_utama)}</div>
                                                             </div>
                                                         )}
                                                         {answers.hal_diperbaiki && !hiddenFields.hal_diperbaiki && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Kekurangan yang Sedang Diperbaiki</span>
-                                                                <div class="text-slate-800 font-medium">{renderTextContent(answers.hal_diperbaiki)}</div>
+                                                                <div class="text-slate-800 font-semibold">{renderTextContent(answers.hal_diperbaiki)}</div>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div class="text-[10px] text-slate-400 text-center font-medium">Lembar Profil & Deskripsi Karakter</div>
+                                                <div class="text-[10px] text-slate-400 text-center font-bold">Lembar Profil & Deskripsi Karakter</div>
                                             </div>
                                         )}
 
@@ -2106,46 +2073,46 @@
                                                     <h3 class={`${tStyles.categoryHeader} text-center uppercase tracking-wide text-xl sm:text-2xl font-bold`}>
                                                         2. Latar Belakang Keluarga
                                                     </h3>
-                                                    <div class="space-y-4 text-xs sm:text-sm leading-relaxed mt-6">
+                                                    <div class="space-y-4 text-xs sm:text-sm leading-relaxed mt-6 font-semibold">
                                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             {answers.anak_ke && !hiddenFields.anak_ke && (
                                                                 <div>
-                                                                    <span class="text-[10px] text-slate-400 font-semibold block">Anak ke- / Bersaudara</span>
-                                                                    <span class="font-semibold text-slate-800">{answers.anak_ke}</span>
+                                                                    <span class="text-[10px] text-slate-400 block font-bold">Anak ke- / Bersaudara</span>
+                                                                    <span class="text-slate-800 font-bold">{answers.anak_ke}</span>
                                                                 </div>
                                                             )}
                                                             {answers.kondisi_orang_tua && !hiddenFields.kondisi_orang_tua && (
                                                                 <div>
-                                                                    <span class="text-[10px] text-slate-400 font-semibold block">Kondisi Orang Tua</span>
-                                                                    <span class="font-semibold text-slate-800">{answers.kondisi_orang_tua}</span>
+                                                                    <span class="text-[10px] text-slate-400 block font-bold">Kondisi Orang Tua</span>
+                                                                    <span class="text-slate-800 font-bold">{answers.kondisi_orang_tua}</span>
                                                                 </div>
                                                             )}
                                                         </div>
                                                         {answers.hubungan_ayah && !hiddenFields.hubungan_ayah && (
                                                             <div class={tStyles.cardBg}>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block uppercase mb-1">Hubungan dengan Ayah Kandung</span>
-                                                                <p class="text-slate-800 font-medium">{answers.hubungan_ayah}</p>
+                                                                <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Hubungan dengan Ayah Kandung</span>
+                                                                <p class="text-slate-800 font-semibold">{answers.hubungan_ayah}</p>
                                                             </div>
                                                         )}
                                                         {answers.hubungan_ibu && !hiddenFields.hubungan_ibu && (
                                                             <div class={tStyles.cardBg}>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block uppercase mb-1">Hubungan dengan Ibu Kandung</span>
-                                                                <p class="text-slate-800 font-medium">{answers.hubungan_ibu}</p>
+                                                                <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Hubungan dengan Ibu Kandung</span>
+                                                                <p class="text-slate-800 font-semibold">{answers.hubungan_ibu}</p>
                                                             </div>
                                                         )}
                                                         {answers.hubungan_saudara && !hiddenFields.hubungan_saudara && (
                                                             <div class={tStyles.cardBg}>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block uppercase mb-1">Hubungan dengan Saudara Kandung</span>
-                                                                <p class="text-slate-800 font-medium">{answers.hubungan_saudara}</p>
+                                                                <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Hubungan dengan Saudara Kandung</span>
+                                                                <p class="text-slate-800 font-semibold">{answers.hubungan_saudara}</p>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div class="text-[10px] text-slate-400 text-center">Lembar Silsilah Keluarga Besar</div>
+                                                <div class="text-[10px] text-slate-400 text-center font-bold">Lembar Silsilah Keluarga Besar</div>
                                             </div>
                                         )}
 
-                                        {/* PAGE 5: CONSOLIDATED PENDIDIKAN, PEKERJAAN & KONDISI FINANSIAL (Pendidikan, Pekerjaan, Keuangan, Aset) */}
+                                        {/* PAGE 5: CONSOLIDATED PENDIDIKAN, PEKERJAAN & KONDISI FINANSIAL */}
                                         {(!hiddenFields.pendidikan_terakhir || !hiddenFields.pekerjaan_saat_ini || !hiddenFields.rencana_karir || !hiddenFields.hutang_pribadi || !hiddenFields.tabungan_pribadi || !hiddenFields.aset_dimiliki) && (
                                             <div class="cv-page min-h-[260mm] flex flex-col justify-between py-10">
                                                 <div>
@@ -2153,31 +2120,30 @@
                                                         3. Karir, Pekerjaan & Finansial
                                                     </h3>
                                                     
-                                                    {/* Pendidikan & Pekerjaan Section */}
-                                                    <div class="space-y-4 text-xs sm:text-sm mt-6">
+                                                    <div class="space-y-4 text-xs sm:text-sm mt-6 font-semibold">
                                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             {answers.pendidikan_terakhir && !hiddenFields.pendidikan_terakhir && (
                                                                 <div>
-                                                                    <span class="text-[10px] text-slate-400 font-semibold block">Pendidikan Terakhir</span>
+                                                                    <span class="text-[10px] text-slate-400 block font-bold">Pendidikan Terakhir</span>
                                                                     <span class="font-bold text-slate-800 text-base">{answers.pendidikan_terakhir}</span>
                                                                 </div>
                                                             )}
                                                             {answers.pekerjaan_saat_ini && !hiddenFields.pekerjaan_saat_ini && (
                                                                 <div>
-                                                                    <span class="text-[10px] text-slate-400 font-semibold block">Pekerjaan / Aktivitas</span>
+                                                                    <span class="text-[10px] text-slate-400 block font-bold">Pekerjaan / Aktivitas</span>
                                                                     <span class="font-bold text-slate-800 text-base">{answers.pekerjaan_saat_ini}</span>
                                                                 </div>
                                                             )}
                                                             {mode === 'advanced' && answers.penghasilan_bulanan && !hiddenFields.penghasilan_bulanan && (
                                                                 <div>
-                                                                    <span class="text-[10px] text-slate-400 font-semibold block">Rata-rata Penghasilan Bulanan</span>
-                                                                    <span class="font-semibold text-slate-800">{answers.penghasilan_bulanan}</span>
+                                                                    <span class="text-[10px] text-slate-400 block font-bold">Rata-rata Penghasilan Bulanan</span>
+                                                                    <span class="text-slate-800 font-semibold">{answers.penghasilan_bulanan}</span>
                                                                 </div>
                                                             )}
                                                             {mode === 'advanced' && answers.penghasilan_stabil && !hiddenFields.penghasilan_stabil && (
                                                                 <div>
-                                                                    <span class="text-[10px] text-slate-400 font-semibold block">Stabilitas Penghasilan</span>
-                                                                    <span class="font-semibold text-slate-800">{answers.penghasilan_stabil}</span>
+                                                                    <span class="text-[10px] text-slate-400 block font-bold">Stabilitas Penghasilan</span>
+                                                                    <span class="text-slate-800 font-semibold">{answers.penghasilan_stabil}</span>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -2185,46 +2151,46 @@
                                                         {answers.rencana_karir && !hiddenFields.rencana_karir && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Rencana Karir / Usaha ke Depan</span>
-                                                                <p class="text-slate-800 font-medium">{answers.rencana_karir}</p>
+                                                                <p class="text-slate-800 font-semibold">{answers.rencana_karir}</p>
                                                             </div>
                                                         )}
 
                                                         {gender === 'akhwat' && answers.wanita_pekerjaan_setelah_nikah && !hiddenFields.wanita_pekerjaan_setelah_nikah && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Pandangan Bekerja Setelah Menikah</span>
-                                                                <p class="text-slate-800 font-medium">{answers.wanita_pekerjaan_setelah_nikah}</p>
+                                                                <p class="text-slate-800 font-semibold">{answers.wanita_pekerjaan_setelah_nikah}</p>
                                                             </div>
                                                         )}
 
                                                         {gender === 'ikhwan' && answers.pria_kesiapan_nafkah && !hiddenFields.pria_kesiapan_nafkah && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Kesiapan Menanggung Nafkah Utama</span>
-                                                                <p class="text-slate-800 font-medium">{answers.pria_kesiapan_nafkah}</p>
+                                                                <p class="text-slate-800 font-semibold">{answers.pria_kesiapan_nafkah}</p>
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     {/* Financial Info & Assets Section (Advanced Mode Only) */}
                                                     {mode === 'advanced' && (
-                                                        <div class="mt-8 pt-6 border-t border-slate-100 space-y-4 text-xs sm:text-sm">
+                                                        <div class="mt-8 pt-6 border-t border-slate-100 space-y-4 text-xs sm:text-sm font-semibold">
                                                             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Informasi Finansial & Amanah Harta</h4>
                                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                                 {answers.hutang_pribadi && !hiddenFields.hutang_pribadi && (
                                                                     <div>
-                                                                        <span class="text-[10px] text-slate-400 font-semibold block">Hutang Pribadi</span>
-                                                                        <span class="font-semibold text-slate-800">{answers.hutang_pribadi}</span>
+                                                                        <span class="text-[10px] text-slate-400 block font-bold">Hutang Pribadi</span>
+                                                                        <span class="text-slate-800 font-semibold">{answers.hutang_pribadi}</span>
                                                                     </div>
                                                                 )}
                                                                 {answers.estimasi_hutang && !hiddenFields.estimasi_hutang && (
                                                                     <div>
-                                                                        <span class="text-[10px] text-slate-400 font-semibold block">Estimasi Keperluan Hutang</span>
-                                                                        <span class="font-semibold text-slate-800">{answers.estimasi_hutang}</span>
+                                                                        <span class="text-[10px] text-slate-400 block font-bold">Estimasi Keperluan Hutang</span>
+                                                                        <span class="text-slate-800 font-semibold">{answers.estimasi_hutang}</span>
                                                                     </div>
                                                                 )}
                                                             </div>
                                                             {answers.aset_dimiliki && answers.aset_dimiliki.length > 0 && !hiddenFields.aset_dimiliki && (
                                                                 <div>
-                                                                    <span class="text-[10px] text-slate-400 font-semibold block mb-1">Aset yang Sudah Dimiliki</span>
+                                                                    <span class="text-[10px] text-slate-400 block font-bold mb-1">Aset yang Sudah Dimiliki</span>
                                                                     <div class="flex flex-wrap gap-2 mt-1">
                                                                         {answers.aset_dimiliki.map((aset, index) => (
                                                                             <span key={index} class={`text-xs px-2.5 py-1 rounded-md font-bold ${tStyles.pillBg}`}>
@@ -2235,20 +2201,20 @@
                                                                 </div>
                                                             )}
                                                             {answers.prinsip_uang_keluarga && !hiddenFields.prinsip_uang_keluarga && (
-                                                                <div class="p-4 rounded-xl bg-amber-50/50 border border-amber-100">
+                                                                <div class="p-4 rounded-xl bg-amber-50/50 border border-amber-100 font-medium">
                                                                     <span class="text-[10px] text-amber-800 font-bold block uppercase mb-1">Prinsip Keuangan Keluarga</span>
-                                                                    <p class="text-slate-700 italic font-medium">"{answers.prinsip_uang_keluarga}"</p>
+                                                                    <p class="text-slate-700 italic font-semibold">"{answers.prinsip_uang_keluarga}"</p>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     )}
 
                                                 </div>
-                                                <div class="text-[10px] text-slate-400 text-center font-medium">Lembar Finansial, Pendidikan & Karir</div>
+                                                <div class="text-[10px] text-slate-400 text-center font-bold">Lembar Finansial, Pendidikan & Karir</div>
                                             </div>
                                         )}
 
-                                        {/* PAGE 6: CONSOLIDATED IBADAH, NILAI KEISLAMAN & KEPRIBADIAN (Ibadah, Agama, Karakter, Penanganan Emosi) */}
+                                        {/* PAGE 6: CONSOLIDATED IBADAH, NILAI KEISLAMAN & KEPRIBADIAN */}
                                         {(!hiddenFields.shalat_wajib || !hiddenFields.rutin_baca_quran || !hiddenFields.hafalan_quran || !hiddenFields.reaksi_marah || !hiddenFields.reaksi_kecewa || !hiddenFields.cara_diperlakukan_stres) && (
                                             <div class="cv-page min-h-[260mm] flex flex-col justify-between py-10">
                                                 <div>
@@ -2257,96 +2223,96 @@
                                                     </h3>
                                                     
                                                     {/* Spiritual & Religious metrics */}
-                                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm mt-6">
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm mt-6 font-semibold">
                                                         {answers.shalat_wajib && !hiddenFields.shalat_wajib && (
                                                             <div class={tStyles.cardBg}>
-                                                                <span class="text-[10px] text-slate-400 font-bold block uppercase mb-1">Shalat Wajib</span>
-                                                                <p class="text-slate-800 font-medium">{answers.shalat_wajib}</p>
+                                                                <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Shalat Wajib</span>
+                                                                <p class="text-slate-800 font-semibold">{answers.shalat_wajib}</p>
                                                             </div>
                                                         )}
                                                         {answers.rutin_baca_quran && !hiddenFields.rutin_baca_quran && (
                                                             <div class={tStyles.cardBg}>
-                                                                <span class="text-[10px] text-slate-400 font-bold block uppercase mb-1">Rutinitas Al-Qur'an</span>
-                                                                <p class="text-slate-800 font-medium">{answers.rutin_baca_quran}</p>
+                                                                <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Rutinitas Al-Qur'an</span>
+                                                                <p class="text-slate-800 font-semibold">{answers.rutin_baca_quran}</p>
                                                             </div>
                                                         )}
                                                         {answers.hafalan_quran && !hiddenFields.hafalan_quran && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Jumlah Hafalan</span>
-                                                                <span class="font-semibold text-slate-800">{answers.hafalan_quran}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Jumlah Hafalan</span>
+                                                                <span class="text-slate-800 font-bold">{answers.hafalan_quran}</span>
                                                             </div>
                                                         )}
                                                         {answers.ustadz_sering_didengar && !hiddenFields.ustadz_sering_didengar && (
                                                             <div>
-                                                                <span class="text-[10px] text-slate-400 font-semibold block">Ustadz yang Sering Didengar</span>
-                                                                <span class="font-semibold text-slate-800">{answers.ustadz_sering_didengar}</span>
+                                                                <span class="text-[10px] text-slate-400 block font-bold">Ustadz yang Sering Didengar</span>
+                                                                <span class="text-slate-800 font-bold">{answers.ustadz_sering_didengar}</span>
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     {/* Emotion Management & Habits */}
-                                                    <div class="mt-8 pt-6 border-t border-slate-100 space-y-4 text-xs sm:text-sm">
+                                                    <div class="mt-8 pt-6 border-t border-slate-100 space-y-4 text-xs sm:text-sm font-semibold">
                                                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Manajemen Emosi & Sifat Harian</h4>
                                                         {answers.reaksi_marah && !hiddenFields.reaksi_marah && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Sikap Saat Marah</span>
-                                                                <p class="text-slate-800 font-medium">{answers.reaksi_marah}</p>
+                                                                <p class="text-slate-800 font-semibold">{answers.reaksi_marah}</p>
                                                             </div>
                                                         )}
                                                         {answers.reaksi_kecewa && !hiddenFields.reaksi_kecewa && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Sikap Saat Kecewa</span>
-                                                                <p class="text-slate-800 font-medium">{answers.reaksi_kecewa}</p>
+                                                                <p class="text-slate-800 font-semibold">{answers.reaksi_kecewa}</p>
                                                             </div>
                                                         )}
                                                         {answers.cara_diperlakukan_stres && !hiddenFields.cara_diperlakukan_stres && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Bagaimana Diperlakukan Saat Stres</span>
-                                                                <p class="text-slate-800 font-medium">{answers.cara_diperlakukan_stres}</p>
+                                                                <p class="text-slate-800 font-semibold">{answers.cara_diperlakukan_stres}</p>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div class="text-[10px] text-slate-400 text-center font-medium">Lembar Pondasi Iman, Karakter & Adab</div>
+                                                <div class="text-[10px] text-slate-400 text-center font-bold">Lembar Pondasi Iman, Karakter & Adab</div>
                                             </div>
                                         )}
 
-                                        {/* PAGE 7: VISI PERNIKAHAN, PREFERENSI & DEAL BREAKER (Visi Pernikahan, Kriteria Pasangan, Deal Breaker, Penutup) */}
+                                        {/* PAGE 7: VISI PERNIKAHAN, PREFERENSI & DEAL BREAKER */}
                                         {(!hiddenFields.kriteria_pasangan || !hiddenFields.deal_breaker || !hiddenFields.hal_tidak_ditoleransi || !hiddenFields.alasan_menikah || !hiddenFields.target_menikah) && (
                                             <div class="cv-page min-h-[260mm] flex flex-col justify-between py-10">
                                                 <div>
                                                     <h3 class={`${tStyles.categoryHeader} text-center uppercase tracking-wide text-xl sm:text-2xl font-bold`}>
                                                         5. Visi Pernikahan & Preferensi Pasangan
                                                     </h3>
-                                                    <div class="space-y-4 text-xs sm:text-sm mt-6">
+                                                    <div class="space-y-4 text-xs sm:text-sm mt-6 font-semibold">
                                                         {answers.alasan_menikah && !hiddenFields.alasan_menikah && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Niat & Alasan Ingin Menikah</span>
-                                                                <p class="text-slate-800 font-medium whitespace-pre-line">{answers.alasan_menikah}</p>
+                                                                <p class="text-slate-800 font-semibold whitespace-pre-line">{answers.alasan_menikah}</p>
                                                             </div>
                                                         )}
                                                         {answers.kriteria_pasangan && !hiddenFields.kriteria_pasangan && (
                                                             <div class={tStyles.cardBg}>
                                                                 <span class="text-[10px] text-slate-400 block font-bold uppercase mb-1">Kriteria Pasangan Ideal</span>
-                                                                <p class="text-slate-800 font-medium whitespace-pre-line">{answers.kriteria_pasangan}</p>
+                                                                <p class="text-slate-800 font-semibold whitespace-pre-line">{answers.kriteria_pasangan}</p>
                                                             </div>
                                                         )}
                                                         {mode === 'basic' && answers.hal_tidak_ditoleransi && !hiddenFields.hal_tidak_ditoleransi && (
                                                             <div class="bg-red-50/50 p-4 border border-red-100 rounded-xl">
-                                                                <span class="text-[10px] text-red-800 block font-bold uppercase mb-1">Hal yang tidak bisa ditoleransi</span>
-                                                                <p class="text-slate-700 font-semibold">{answers.hal_tidak_ditoleransi}</p>
+                                                                <span class="text-[10px] text-red-800 block font-bold uppercase mb-1 font-bold">Hal yang tidak bisa ditoleransi</span>
+                                                                <p class="text-slate-700 font-bold">{answers.hal_tidak_ditoleransi}</p>
                                                             </div>
                                                         )}
                                                         {mode === 'advanced' && answers.deal_breaker && !hiddenFields.deal_breaker && (
                                                             <div class="bg-red-50/50 p-4 border border-red-100 rounded-xl">
-                                                                <span class="text-[10px] text-red-800 block font-bold uppercase mb-1">DEAL BREAKER MUTLAK</span>
-                                                                <p class="text-slate-700 font-semibold">{answers.deal_breaker}</p>
+                                                                <span class="text-[10px] text-red-800 block font-bold uppercase mb-1 font-bold">DEAL BREAKER MUTLAK</span>
+                                                                <p class="text-slate-700 font-bold">{answers.deal_breaker}</p>
                                                             </div>
                                                         )}
                                                         {mode === 'advanced' && answers.pandangan_poligami && !hiddenFields.pandangan_poligami && (
-                                                            <div class="p-4 border rounded-xl bg-slate-50/80">
-                                                                <span class="text-[10px] text-slate-400 block font-bold mb-1">Pandangan tentang Poligami</span>
-                                                                <p class="text-slate-700 font-medium italic">"{answers.pandangan_poligami}"</p>
+                                                            <div class="p-4 border rounded-xl bg-slate-50/80 font-medium">
+                                                                <span class="text-[10px] text-slate-400 block font-bold mb-1 font-bold">Pandangan tentang Poligami</span>
+                                                                <p class="text-slate-700 italic font-semibold">"{answers.pandangan_poligami}"</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -2356,17 +2322,17 @@
                                                 <div class="space-y-6 pt-10">
                                                     <div class={`p-6 rounded-2xl border ${tStyles.cardBg} border-t-4`}>
                                                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Pernyataan Singkat</h4>
-                                                        <p class="text-xs text-slate-600 leading-relaxed italic mb-4">
+                                                        <p class="text-xs text-slate-600 leading-relaxed italic mb-4 font-semibold">
                                                             "Data dalam CV ini saya isi dengan sebenar-benarnya sesuai kondisi saat ini. Semoga dokumen ini bisa menjadi ikhtiar awal untuk proses ta’aruf yang lebih jujur, terarah, dan bertanggung jawab."
                                                         </p>
-                                                        <div class="flex justify-between items-center text-[10px] text-slate-400 border-t pt-3 font-semibold">
+                                                        <div class="flex justify-between items-center text-[10px] text-slate-400 border-t pt-3 font-bold">
                                                             <span>Tanggal dibuat: {getCurrentDateFormatted()}</span>
                                                             <span class="font-bold uppercase text-slate-700">Nama: {answers.nama_lengkap || 'Tanpa Nama'}</span>
                                                         </div>
                                                     </div>
 
                                                     {/* DOCUMENT FOOTER PROTECTION PANEL */}
-                                                    <div class="border-t pt-4 border-slate-100 text-center text-[9px] text-slate-300 font-medium uppercase tracking-wider">
+                                                    <div class="border-t pt-4 border-slate-100 text-center text-[9px] text-slate-300 font-bold uppercase tracking-wider">
                                                         Seluruh hak cipta dilindungi undang-undang • Faza Digital
                                                     </div>
                                                 </div>
@@ -2382,7 +2348,7 @@
 
                     {/* Footer bar */}
                     <footer class="bg-white border-t border-slate-100 py-4 text-center text-[10px] sm:text-xs text-slate-400 no-print mt-auto">
-                        <div class="max-w-7xl mx-auto px-4 space-y-1 font-medium">
+                        <div class="max-w-7xl mx-auto px-4 space-y-1 font-semibold">
                             <p>© 2026 CV Ta’aruf Generator. Dirancang secara profesional oleh Faza Digital.</p>
                             <p class="text-[9px]">Seluruh data diolah secara lokal di perangkat pengguna tanpa pernah dikirimkan ke server eksternal mana pun.</p>
                         </div>
@@ -2408,11 +2374,11 @@
                                     ⚠️
                                 </div>
                                 <h3 class="text-lg font-bold text-slate-900 serif-title">Konfirmasi Tindakan</h3>
-                                <p class="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed font-medium">{confirmModal.message}</p>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed font-bold">{confirmModal.message}</p>
                                 <div class="mt-6 flex gap-3">
                                     <button 
                                         onClick={() => setConfirmModal({ show: false, message: '', onConfirm: null })} 
-                                        class="w-1/2 px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-medium text-xs sm:text-sm transition text-center"
+                                        class="w-1/2 px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-semibold text-xs sm:text-sm transition text-center"
                                     >
                                         Batal
                                     </button>
@@ -2421,9 +2387,43 @@
                                             if (confirmModal.onConfirm) confirmModal.onConfirm();
                                             setConfirmModal({ show: false, message: '', onConfirm: null });
                                         }} 
-                                        class="w-1/2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold text-xs sm:text-sm transition shadow-sm text-center"
+                                        class="w-1/2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-sm text-center"
                                     >
                                         Ya, Lakukan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Custom Draft Recovery Modal */}
+                    {showDraftModal && (
+                        <div class="fixed inset-0 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 no-print">
+                            <div class="bg-white rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-xl border border-slate-100 text-center">
+                                <div class="w-12 h-12 bg-sage-50 text-sage-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                                    📝
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-900 serif-title">Draf Ditemukan</h3>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed font-semibold">
+                                    Kami menemukan draf pengisian formulir CV Ta’aruf yang belum selesai di perangkat ini. Apakah Anda ingin melanjutkan pengisian dari draf terakhir Anda?
+                                </p>
+                                <div class="mt-6 flex gap-3">
+                                    <button 
+                                        onClick={() => {
+                                            localStorage.removeItem('cv_taaruf_active_draft_answers');
+                                            setAnswers({});
+                                            setShowDraftModal(false);
+                                            showToast("Draf dibersihkan, memulai formulir baru.");
+                                        }} 
+                                        class="w-1/2 px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl font-semibold text-xs sm:text-sm transition text-center"
+                                    >
+                                        Mulai Baru
+                                    </button>
+                                    <button 
+                                        onClick={recoverActiveDraft} 
+                                        class="w-1/2 px-4 py-2.5 bg-sage-600 hover:bg-sage-700 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-sm text-center"
+                                    >
+                                        Lanjutkan Draft
                                     </button>
                                 </div>
                             </div>
