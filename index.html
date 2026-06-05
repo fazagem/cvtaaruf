@@ -2,7 +2,646 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Akses Digital</title>
+  <title>Akses Digital</title><!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akses Digital - Portal Aplikasi Praktis Mandiri</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Kumpulan aplikasi digital praktis untuk membantu proses taaruf, karier, produktivitas, dan pengambilan keputusan terbaik dalam hidup Anda.">
+    <meta name="keywords" content="taaruf generator, cv taaruf, red flag detector, radar cinta, lamarkerja kit, produktivitas, karier, portal digital">
+    <meta name="author" content="Akses Digital">
+    
+    <!-- Google Fonts: Plus Jakarta Sans for premium SaaS UI look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#0F172A', // Dark Slate Slate-900
+                            navy: '#1E3A8A', // Deep Navy Blue-900
+                            emerald: '#10B981', // Emerald-500
+                            'emerald-dark': '#059669', // Emerald-600
+                        }
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.02)',
+                        'premium-hover': '0 20px 40px -15px rgba(16, 185, 129, 0.1), 0 1px 10px 0 rgba(15, 23, 42, 0.05)',
+                        'premium-dark-hover': '0 20px 40px -15px rgba(16, 185, 129, 0.15), 0 1px 10px 0 rgba(0, 0, 0, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Additional Styles for Custom Animations -->
+    <style>
+        .glow-effect {
+            position: relative;
+        }
+        .glow-effect::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1.5px;
+            background: linear-gradient(to bottom right, #3b82f6, #10b981);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .glow-effect:hover::before {
+            opacity: 1;
+        }
+        
+        /* Skeleton & Grid Dot Backgrounds */
+        .bg-dots {
+            background-image: radial-gradient(#e2e8f0 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+        .dark .bg-dots {
+            background-image: radial-gradient(#1e293b 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#0B0F19] text-slate-800 dark:text-slate-100 font-sans antialiased min-h-screen transition-colors duration-300">
+
+    <!-- Top Grid Dot Decorative Background -->
+    <div class="absolute inset-0 h-[650px] bg-dots opacity-60 dark:opacity-40 pointer-events-none z-0"></div>
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent blur-[120px] pointer-events-none z-0"></div>
+
+    <!-- Header Section -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-white/75 dark:bg-[#0B0F19]/75 border-b border-slate-100 dark:border-slate-900 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-navy to-brand-emerald flex items-center justify-center shadow-md shadow-emerald-500/10">
+                        <i data-lucide="layers" class="w-5.5 h-5.5 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-brand-blue to-emerald-600 dark:from-white dark:to-emerald-400 bg-clip-text text-transparent">Akses Digital</span>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#hero" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Beranda</a>
+                    <a href="#aplikasi" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Semua Aplikasi</a>
+                    <a href="#tentang" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Tentang Kami</a>
+                    <a href="#kontak" class="text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Kontak</a>
+                </nav>
+
+                <!-- Action Controls -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-brand-emerald dark:hover:text-brand-emerald transition-all duration-200 border border-transparent dark:border-slate-800" aria-label="Toggle Dark Mode">
+                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                        <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                    </button>
+
+                    <!-- Mobile Menu Button -->
+                    <button id="mobileMenuBtn" class="md:hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-transparent dark:border-slate-800" aria-label="Menu">
+                        <i data-lucide="menu" id="menuIcon" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobileDrawer" class="hidden md:hidden absolute top-full left-0 w-full bg-white dark:bg-[#0B0F19] border-b border-slate-100 dark:border-slate-900 px-6 py-6 space-y-4 shadow-xl transition-all duration-300 ease-in-out">
+            <a href="#hero" onclick="toggleMenu()" class="block py-2.5 px-4 rounded-xl font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white transition-colors">Beranda</a>
+            <a href="#aplikasi" onclick="toggleMenu()" class="block py-2.5 px-4 rounded-xl font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white transition-colors">Semua Aplikasi</a>
+            <a href="#tentang" onclick="toggleMenu()" class="block py-2.5 px-4 rounded-xl font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white transition-colors">Tentang Kami</a>
+            <a href="#kontak" onclick="toggleMenu()" class="block py-2.5 px-4 rounded-xl font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-slate-900 dark:hover:text-white transition-colors">Kontak</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+
+        <!-- 1. Hero Section -->
+        <section id="hero" class="pt-16 pb-12 sm:pt-24 sm:pb-20 text-center">
+            <div class="max-w-3xl mx-auto">
+                <!-- Badge Accent -->
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide uppercase mb-6 border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Portal Premium Terintegrasi
+                </div>
+                
+                <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-brand-blue dark:text-white mb-6 leading-[1.15]">
+                    Akses <span class="bg-gradient-to-r from-emerald-600 to-indigo-600 dark:from-emerald-400 dark:to-indigo-400 bg-clip-text text-transparent">Digital</span>
+                </h1>
+                
+                <p class="text-lg sm:text-xl text-slate-600 dark:text-slate-400 font-normal leading-relaxed max-w-2xl mx-auto mb-10">
+                    Kumpulan aplikasi digital praktis untuk membantu proses taaruf, karier, produktivitas, dan pengambilan keputusan dengan antarmuka terbaik.
+                </p>
+                
+                <!-- Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="#aplikasi" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-semibold shadow-lg shadow-slate-950/10 dark:shadow-emerald-500/10 hover:shadow-xl transition-all duration-200 group">
+                        Jelajahi Aplikasi
+                        <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <a href="#tentang" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-850/50 hover:text-slate-900 dark:hover:text-white transition-all duration-200">
+                        Tentang Kami
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="w-full h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent my-12"></div>
+
+        <!-- 2. Section Aplikasi (Active Grid) -->
+        <section id="aplikasi" class="scroll-mt-24">
+            <!-- Section Header + Controls -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-brand-blue dark:text-white">
+                        Aplikasi Unggulan
+                    </h2>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2">
+                        Pilih dan luncurkan aplikasi pendukung aktivitas harian Anda.
+                    </p>
+                </div>
+
+                <!-- Live Search Box -->
+                <div class="relative w-full md:w-80">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+                    <input type="text" id="appSearch" placeholder="Cari nama atau deskripsi..." class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-sm placeholder-slate-400 dark:placeholder-slate-500 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-emerald dark:focus:ring-emerald-500 focus:border-transparent transition-all duration-200">
+                </div>
+            </div>
+
+            <!-- Categories Tabs -->
+            <div class="flex flex-wrap items-center gap-2 mb-10 border-b border-slate-100 dark:border-slate-900 pb-4">
+                <button onclick="filterCategory('all')" data-cat="all" class="category-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-brand-navy dark:bg-emerald-500 text-white shadow-sm">
+                    Semua Aplikasi
+                </button>
+                <button onclick="filterCategory('taaruf')" data-cat="taaruf" class="category-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-slate-800/60">
+                    Taaruf & Hubungan
+                </button>
+                <button onclick="filterCategory('karier')" data-cat="karier" class="category-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-slate-800/60">
+                    Karier & Produktivitas
+                </button>
+            </div>
+
+            <!-- Application Responsive Grid -->
+            <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                
+                <!-- Card 1: CV Ta'aruf Generator -->
+                <div class="app-card group relative flex flex-col justify-between bg-white dark:bg-[#0E1524] border border-slate-100 dark:border-slate-900 rounded-2xl p-6 sm:p-8 shadow-premium hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300 glow-effect" data-category="taaruf" data-title="cv ta'aruf generator" data-desc="membuat cv ta'aruf profesional berdasarkan data diri nilai hidup visi pernikahan dan preferensi pasangan">
+                    <div>
+                        <!-- Header Card -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                <i data-lucide="file-text" class="w-6 h-6"></i>
+                            </div>
+                            <span class="px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-lg">
+                                Taaruf & Hubungan
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-brand-emerald dark:group-hover:text-emerald-400 transition-colors">
+                            CV Ta'aruf Generator
+                        </h3>
+                        <p class="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                            Membuat CV Ta'aruf profesional berdasarkan data diri, nilai hidup, visi pernikahan, dan preferensi pasangan.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="/cvtaaruf" class="inline-flex items-center justify-center w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-50 hover:bg-slate-900 dark:bg-slate-900 hover:dark:bg-emerald-500 text-slate-700 hover:text-white dark:text-slate-300 hover:dark:text-white border border-slate-200/50 dark:border-slate-800 hover:border-transparent dark:hover:border-transparent font-semibold text-sm transition-all duration-200 group-hover:translate-y-[-1px]">
+                            Buka Aplikasi
+                            <i data-lucide="external-link" class="w-4 h-4 ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 2: Red Flag Detector -->
+                <div class="app-card group relative flex flex-col justify-between bg-white dark:bg-[#0E1524] border border-slate-100 dark:border-slate-900 rounded-2xl p-6 sm:p-8 shadow-premium hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300 glow-effect" data-category="taaruf" data-title="red flag detector" data-desc="membantu mengidentifikasi area risiko dan potensi red flag dalam proses pendekatan taaruf atau hubungan">
+                    <div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                            </div>
+                            <span class="px-3 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-semibold rounded-lg">
+                                Taaruf & Hubungan
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-brand-emerald dark:group-hover:text-emerald-400 transition-colors">
+                            Red Flag Detector
+                        </h3>
+                        <p class="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                            Membantu mengidentifikasi area risiko dan potensi red flag dalam proses pendekatan, taaruf, atau hubungan.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="/redflag" class="inline-flex items-center justify-center w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-50 hover:bg-slate-900 dark:bg-slate-900 hover:dark:bg-emerald-500 text-slate-700 hover:text-white dark:text-slate-300 hover:dark:text-white border border-slate-200/50 dark:border-slate-800 hover:border-transparent dark:hover:border-transparent font-semibold text-sm transition-all duration-200 group-hover:translate-y-[-1px]">
+                            Buka Aplikasi
+                            <i data-lucide="external-link" class="w-4 h-4 ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 3: Radar Cinta -->
+                <div class="app-card group relative flex flex-col justify-between bg-white dark:bg-[#0E1524] border border-slate-100 dark:border-slate-900 rounded-2xl p-6 sm:p-8 shadow-premium hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300 glow-effect" data-category="taaruf" data-title="radar cinta" data-desc="membantu mengevaluasi kecocokan komunikasi dan kesiapan hubungan secara lebih terstruktur">
+                    <div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-brand-emerald">
+                                <i data-lucide="heart-handshake" class="w-6 h-6"></i>
+                            </div>
+                            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-brand-emerald text-xs font-semibold rounded-lg">
+                                Taaruf & Hubungan
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-brand-emerald dark:group-hover:text-emerald-400 transition-colors">
+                            Radar Cinta
+                        </h3>
+                        <p class="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                            Membantu mengevaluasi kecocokan, komunikasi, dan kesiapan hubungan secara lebih terstruktur.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="/radar-cinta" class="inline-flex items-center justify-center w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-50 hover:bg-slate-900 dark:bg-slate-900 hover:dark:bg-emerald-500 text-slate-700 hover:text-white dark:text-slate-300 hover:dark:text-white border border-slate-200/50 dark:border-slate-800 hover:border-transparent dark:hover:border-transparent font-semibold text-sm transition-all duration-200 group-hover:translate-y-[-1px]">
+                            Buka Aplikasi
+                            <i data-lucide="external-link" class="w-4 h-4 ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 4: LamarKerja Kit -->
+                <div class="app-card group relative flex flex-col justify-between bg-white dark:bg-[#0E1524] border border-slate-100 dark:border-slate-900 rounded-2xl p-6 sm:p-8 shadow-premium hover:shadow-premium-hover dark:hover:shadow-premium-dark-hover transition-all duration-300 glow-effect" data-category="karier" data-title="lamarkerja kit" data-desc="cv ats builder portfolio maker dan surat lamaran generator dalam satu aplikasi">
+                    <div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="w-12 h-12 rounded-xl bg-sky-50 dark:bg-sky-950/50 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                                <i data-lucide="briefcase" class="w-6 h-6"></i>
+                            </div>
+                            <span class="px-3 py-1 bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-semibold rounded-lg">
+                                Karier & Produktivitas
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-brand-emerald dark:group-hover:text-emerald-400 transition-colors">
+                            LamarKerja Kit
+                        </h3>
+                        <p class="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                            CV ATS Builder, Portfolio Maker, dan Surat Lamaran Generator dalam satu aplikasi untuk mempercepat karier Anda.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="/lamarkerja" class="inline-flex items-center justify-center w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-50 hover:bg-slate-900 dark:bg-slate-900 hover:dark:bg-emerald-500 text-slate-700 hover:text-white dark:text-slate-300 hover:dark:text-white border border-slate-200/50 dark:border-slate-800 hover:border-transparent dark:hover:border-transparent font-semibold text-sm transition-all duration-200 group-hover:translate-y-[-1px]">
+                            Buka Aplikasi
+                            <i data-lucide="external-link" class="w-4 h-4 ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Empty Search State -->
+            <div id="emptySearch" class="hidden text-center py-16">
+                <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-4 text-slate-400">
+                    <i data-lucide="alert-circle" class="w-8 h-8"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-slate-800 dark:text-white">Aplikasi Tidak Ditemukan</h4>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">Coba gunakan kata kunci pencarian yang berbeda.</p>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="w-full h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent my-16"></div>
+
+        <!-- 3. Section Coming Soon -->
+        <section id="coming-soon">
+            <div class="mb-10 text-center sm:text-left">
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-brand-blue dark:text-white">
+                    Segera Hadir
+                </h2>
+                <p class="text-slate-500 dark:text-slate-400 mt-2">
+                    Kami sedang merancang dan mempersiapkan solusi digital baru yang inovatif untuk Anda.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Card Green Flag Radar -->
+                <div class="relative bg-white/60 dark:bg-[#0E1524]/60 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 transition-all duration-200">
+                    <div class="absolute top-4 right-4 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Coming Soon
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
+                        <i data-lucide="compass" class="w-5 h-5"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-lg mb-2">Green Flag Radar</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Mengeksplorasi potensi nilai-nilai ideal positif dan fondasi karakter terbaik yang ada pada calon pasangan.
+                    </p>
+                </div>
+
+                <!-- Card Deep Self Profiling -->
+                <div class="relative bg-white/60 dark:bg-[#0E1524]/60 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 transition-all duration-200">
+                    <div class="absolute top-4 right-4 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Coming Soon
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4">
+                        <i data-lucide="fingerprint" class="w-5 h-5"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-lg mb-2">Deep Self Profiling</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Analisis kepribadian mendalam untuk memahami cara berpikir dan model aksi terbaik Anda sehari-hari.
+                    </p>
+                </div>
+
+                <!-- Card Compatibility Collision -->
+                <div class="relative bg-white/60 dark:bg-[#0E1524]/60 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 transition-all duration-200">
+                    <div class="absolute top-4 right-4 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Coming Soon
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-lg mb-2">Compatibility Collision</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Simulasi kecocokan ekstrim untuk melihat potensi konflik utama sebelum terjadi benturan keputusan.
+                    </p>
+                </div>
+
+                <!-- Card Family Readiness Check -->
+                <div class="relative bg-white/60 dark:bg-[#0E1524]/60 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 transition-all duration-200">
+                    <div class="absolute top-4 right-4 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Coming Soon
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4">
+                        <i data-lucide="home" class="w-5 h-5"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-lg mb-2">Family Readiness Check</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Mengukur kesiapan finansial, mental, emosional, sosial, dan fisik untuk memulai gerbang keluarga baru.
+                    </p>
+                </div>
+
+                <!-- Card Personal Branding Kit -->
+                <div class="relative bg-white/60 dark:bg-[#0E1524]/60 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 transition-all duration-200">
+                    <div class="absolute top-4 right-4 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        Coming Soon
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 text-lg mb-2">Personal Branding Kit</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Optimalkan citra diri profesional Anda di dunia digital dengan profil portofolio instan premium.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="w-full h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-800 to-transparent my-16"></div>
+
+        <!-- 4. Section Tentang -->
+        <section id="tentang" class="scroll-mt-24 bg-white dark:bg-[#0E1524] border border-slate-100 dark:border-slate-900 rounded-3xl p-8 sm:p-12 shadow-premium relative overflow-hidden">
+            <!-- Decorative circle inside About -->
+            <div class="absolute -bottom-12 -right-12 w-48 h-48 rounded-full bg-emerald-500/5 blur-2xl"></div>
+            
+            <div class="max-w-3xl relative z-10">
+                <div class="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                    Sekilas Platform
+                </div>
+                <h2 class="text-2xl sm:text-3.5xl font-bold tracking-tight text-brand-blue dark:text-white mb-6">
+                    Tentang Akses Digital
+                </h2>
+                <p class="text-slate-600 dark:text-slate-350 text-base sm:text-lg leading-relaxed mb-6">
+                    Akses Digital adalah platform inovatif yang dirancang khusus untuk memfasilitasi Anda dengan berbagai tools digital praktis. Fokus kami mencakup asisten cerdas untuk proses pengambilan keputusan, pengembangan kualitas diri, pendalaman hubungan taaruf, serta manajemen akselerasi karier profesional Anda.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6 border-t border-slate-100 dark:border-slate-800/80">
+                    <div>
+                        <h4 class="text-2xl font-extrabold text-brand-blue dark:text-white">4+</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Aplikasi Aktif</p>
+                    </div>
+                    <div>
+                        <h4 class="text-2xl font-extrabold text-brand-blue dark:text-white">5+</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Aplikasi Segera Rilis</p>
+                    </div>
+                    <div>
+                        <h4 class="text-2xl font-extrabold text-brand-blue dark:text-white">100%</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Aman, Cepat & Responsif</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 5. Footer -->
+    <footer id="kontak" class="bg-white dark:bg-[#0B0F19] border-t border-slate-100 dark:border-slate-900 py-16 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <!-- Branding column -->
+                <div class="space-y-4 md:col-span-1.5">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-navy to-brand-emerald flex items-center justify-center">
+                            <i data-lucide="layers" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <span class="text-lg font-bold text-brand-blue dark:text-white tracking-tight">Akses Digital</span>
+                    </div>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Kami menghadirkan aplikasi digital berkualitas tinggi yang mengutamakan fungsi, kenyamanan antarmuka pengguna, serta performa maksimal.
+                    </p>
+                </div>
+
+                <!-- Navigation Menu Column -->
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Navigasi</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#hero" class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-emerald dark:hover:text-emerald-400 transition-colors">Beranda</a></li>
+                        <li><a href="#aplikasi" class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-emerald dark:hover:text-emerald-400 transition-colors">Semua Aplikasi</a></li>
+                        <li><a href="#tentang" class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-emerald dark:hover:text-emerald-400 transition-colors">Tentang Kami</a></li>
+                        <li><a href="#coming-soon" class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-emerald dark:hover:text-emerald-400 transition-colors">Segera Hadir</a></li>
+                    </ul>
+                </div>
+
+                <!-- Kontak Column -->
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Kontak Kami</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                            <i data-lucide="mail" class="w-4 h-4 mr-2.5 text-brand-emerald"></i>
+                            support@aksesdigital.com
+                        </li>
+                        <li class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                            <i data-lucide="map-pin" class="w-4 h-4 mr-2.5 text-brand-emerald"></i>
+                            Jakarta, Indonesia
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Kebijakan Column -->
+                <div>
+                    <h4 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Legalitas</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#kebijakan" class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-emerald dark:hover:text-emerald-400 transition-colors">Kebijakan Privasi</a></li>
+                        <li><a href="#syarat" class="text-sm text-slate-600 dark:text-slate-400 hover:text-brand-emerald dark:hover:text-emerald-400 transition-colors">Syarat & Ketentuan</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-slate-100 dark:border-slate-900/85 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-slate-400 dark:text-slate-500 text-center sm:text-left">
+                    &copy; <span id="currentYear"></span> Akses Digital. Hak Cipta Dilindungi.
+                </p>
+                <!-- Social Media Mini Icons -->
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-400 hover:text-brand-emerald hover:dark:text-emerald-400 transition-colors border border-transparent dark:border-slate-800" aria-label="Github">
+                        <i data-lucide="github" class="w-4 h-4"></i>
+                    </a>
+                    <a href="#" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-400 hover:text-brand-emerald hover:dark:text-emerald-400 transition-colors border border-transparent dark:border-slate-800" aria-label="LinkedIn">
+                        <i data-lucide="linkedin" class="w-4 h-4"></i>
+                    </a>
+                    <a href="#" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-400 hover:text-brand-emerald hover:dark:text-emerald-400 transition-colors border border-transparent dark:border-slate-800" aria-label="Twitter">
+                        <i data-lucide="twitter" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Logic Script -->
+    <script>
+        // 1. Initial State: Set Current Year in Footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // 2. Initial State: Dark Mode Setup
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const rootElement = document.documentElement;
+
+        // Check theme status in localStorage or system preferences
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            rootElement.classList.add('dark');
+        } else {
+            rootElement.classList.remove('dark');
+        }
+
+        // Toggle Theme Button Listener
+        themeToggleBtn.addEventListener('click', () => {
+            if (rootElement.classList.contains('dark')) {
+                rootElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                rootElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        });
+
+        // 3. Mobile Navigation Drawer Controller
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileDrawer = document.getElementById('mobileDrawer');
+        const menuIcon = document.getElementById('menuIcon');
+
+        function toggleMenu() {
+            const isHidden = mobileDrawer.classList.contains('hidden');
+            if (isHidden) {
+                mobileDrawer.classList.remove('hidden');
+                // Change menu icon to "X" representation manually or dynamically
+                menuIcon.setAttribute('data-lucide', 'x');
+            } else {
+                mobileDrawer.classList.add('hidden');
+                menuIcon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleMenu);
+
+        // Close drawer automatically on resize if width expands beyond md
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                mobileDrawer.classList.add('hidden');
+                menuIcon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+            }
+        });
+
+        // 4. Advanced Interactive App Search & Filtering Logic
+        const searchInput = document.getElementById('appSearch');
+        const appCards = document.querySelectorAll('.app-card');
+        const emptyState = document.getElementById('emptySearch');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        let activeCategory = 'all';
+
+        // Filter Category Function
+        window.filterCategory = function(category) {
+            activeCategory = category;
+            
+            // Adjust Category Tabs UI Accent active states
+            categoryButtons.forEach(btn => {
+                const btnCat = btn.getAttribute('data-cat');
+                if (btnCat === category) {
+                    btn.className = 'category-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-brand-navy dark:bg-emerald-500 text-white shadow-sm';
+                } else {
+                    btn.className = 'category-btn px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200/60 dark:border-slate-800/60';
+                }
+            });
+
+            performFiltering();
+        }
+
+        // Live Search Input Listener
+        searchInput.addEventListener('input', performFiltering);
+
+        // Combined filtering logic for speed and efficiency
+        function performFiltering() {
+            const query = searchInput.value.toLowerCase().trim();
+            let matchedCount = 0;
+
+            appCards.forEach(card => {
+                const title = card.getAttribute('data-title');
+                const desc = card.getAttribute('data-desc');
+                const category = card.getAttribute('data-category');
+
+                const matchesQuery = title.includes(query) || desc.includes(query);
+                const matchesCategory = (activeCategory === 'all' || category === activeCategory);
+
+                if (matchesQuery && matchesCategory) {
+                    card.style.display = 'flex';
+                    matchedCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Display Empty Search Placeholder if nothing is found
+            if (matchedCount === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        // Initialize Lucide Icons for dynamic element structures
+        window.onload = function() {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
 </head>
 <body>
   <h1>Akses Digital</h1>
